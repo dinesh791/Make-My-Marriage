@@ -1,0 +1,82 @@
+<!-- BEGIN:nextjs-agent-rules -->
+
+## This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->
+
+# Make My Marriage — Project Context
+
+Last reviewed: 2026-10-13
+
+Use this file for project context and implementation guidance. The confirmed V1 baseline is in `docs/PRD.md`, `docs/SYSTEM_DESIGN.md`, and `docs/DB_API_DESIGN.md`. Read this file and the relevant parts of those documents before implementing a feature. Verify progress against source code; a route, helper, or marketing description does not mean the user-facing feature is complete. Current progress, verification, and next steps are tracked separately in `docs/PROJECT_STATUS.md`.
+
+After completing a feature, update `docs/PROJECT_STATUS.md` with what changed, what is verified, what remains, and the next recommended step. Keep the confirmed V1 scope unless the product documents are deliberately revised. Never commit secrets; keep service credentials server-side.
+
+## Product Overview
+
+Make My Marriage is a web application for Tamil-style weddings, initially targeting Tamil Nadu. The V1 goal is to let a bride and groom create and share one wedding link for their wedding information, events, invitation, public website, shopping checklist, catering details, photo gallery, and external livestream. Guests can use public wedding links without accounts. The product UI is intended to support Tamil and English.
+
+The V1 product experience consists of login/sign-up, the couple dashboard, and public wedding websites. A separate marketing landing page is out of scope; during the current sample-data preview, `/` renders the Dinesh & Usha wedding website directly. Its Login link opens `/login`, which links to `/register`. The same sample remains available at `/w/dinesh-usha` as a public wedding URL. See `docs/PROJECT_STATUS.md` for which surfaces are presentation-only versus connected to real authentication and wedding data.
+
+## Stack and Architecture
+
+- Next.js 16 App Router with the `src/` directory, React 19, TypeScript, and Node.js.
+- Modular monolith with an explicit, versioned REST API under `src/app/api/v1`.
+- MongoDB Atlas through Mongoose; Cloudflare R2 for media objects; Resend for email; Vercel is the documented deployment target.
+- Zod for environment and request validation; Argon2 for password hashing; Vitest for tests; ESLint and Prettier for code quality.
+- Intended flow: route handler → controller → service → repository → Mongoose model. Keep HTTP concerns in route handlers/controllers, business rules in services, and database access in repositories. React components must not access MongoDB directly.
+- `src/modules/<feature>/` owns feature-specific controllers, services, repositories, validators, DTOs, and types. Shared Mongoose models belong in `src/models/`; shared application types belong in `src/types/`; integrations and infrastructure clients belong in `src/lib/`.
+
+## Current Project Structure
+
+```text
+docs/                              Confirmed designs and living project status
+public/images/wedding/             Reusable Stitch-derived wedding image
+src/
+  app/
+    (auth)/                         Login/register UI previews; recovery and partner-invite placeholders
+    (dashboard)/dashboard/          Stitch-inspired dashboard preview (sample data)
+    (public)/w/[slug]/              Stitch-inspired public wedding preview (sample data)
+    api/v1/health/                  Implemented health endpoint
+    page.tsx                         Renders the sample wedding at `/`
+    globals.css                      Shared product surfaces and responsive styling
+  components/
+    shared/                          Brand, authentication shell, wedding countdown
+    ui/                              UI-primitives guidance only
+  lib/
+    auth/                            Password helper and session-cookie/type foundation
+    db/                              Cached Mongoose connection helper
+    email/                            Resend client helper
+    env/                              Environment validators
+    http/                             API response envelopes and AppError
+    i18n/                             Locale types; product-page localization remains pending
+    r2/                               Cloudflare R2 S3 client helper
+  models/                             Model guidance only; no Mongoose models
+  modules/                            Module-boundary guidance only; no feature modules
+  types/                              Shared-type guidance only; no shared application types
+tests/
+  unit/http/api-response.test.ts      Tests for success/error response envelopes
+  README.md                           Integration and end-to-end test guidance
+.env.example                          Empty placeholders for service configuration
+```
+
+## Important Technical Decisions
+
+- Treat the three documents in `docs/` as the confirmed V1 scope and architecture baseline.
+- Wedding is the central domain object. Bride and groom roles are represented through wedding membership; guests do not get accounts or a guest-manager feature in V1.
+- Keep a modular monolith; do not introduce microservices without a demonstrated need.
+- Keep API responses in the documented success/error envelope. Validate request data at API boundaries and centralize wedding-membership authorization.
+- Store media objects in R2 and their metadata/object keys in MongoDB. Never store R2 credentials in the database.
+- The public wedding design preview currently references Stitch-exported imagery from the narrowly scoped `lh3.googleusercontent.com/aida-public/**` path and renders those originals without server optimization. Move wedding/gallery media to R2 as the data-backed gallery workflow is implemented.
+- Use expiring, one-time partner-invite tokens and store token hashes. Mutable business records use soft deletion as specified in the DB/API design; email delivery history is audit-like.
+- Store timestamps in UTC and use `Asia/Kolkata` as the V1 wedding timezone. Keep secrets server-side.
+- The exact authentication/session integration still needs to be finalized. `next-auth` is installed, but authentication is explicitly not enabled; password hashing and cookie options alone are not authentication.
+- Node version guidance currently differs: `package.json` allows `>=20.9.0`, while `README.md` recommends Node.js 22.17 or newer. Resolve this consistently before CI/deployment setup.
+
+## Progress Tracking
+
+Read `docs/PROJECT_STATUS.md` for the verified current status, completed and pending work, validation results, and next steps. Keep progress details in that file rather than duplicating them here. Before each implementation step, reread the relevant PRD and design sections and the Next.js guide under `node_modules/next/dist/docs/`.
