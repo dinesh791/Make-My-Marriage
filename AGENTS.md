@@ -10,7 +10,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 # Make My Marriage — Project Context
 
-Last reviewed: 2026-10-13
+Last reviewed: 2026-10-14
 
 Use this file for project context and implementation guidance. The confirmed V1 baseline is in `docs/PRD.md`, `docs/SYSTEM_DESIGN.md`, and `docs/DB_API_DESIGN.md`. Read this file and the relevant parts of those documents before implementing a feature. Verify progress against source code; a route, helper, or marketing description does not mean the user-facing feature is complete. Current progress, verification, and next steps are tracked separately in `docs/PROJECT_STATUS.md`.
 
@@ -65,7 +65,7 @@ tests/
   unit/http/api-response.test.ts      Tests for success/error response envelopes
   unit/auth/auth.test.ts              Isolated authentication/security tests
   README.md                           Integration and end-to-end test guidance
-scripts/                             Explicit DB provisioning and opt-in local auth integration check
+scripts/                             Local MongoDB startup, DB provisioning, auth/wedding integration checks
 .env.example                          Empty placeholders for service configuration
 ```
 
@@ -82,6 +82,7 @@ scripts/                             Explicit DB provisioning and opt-in local a
 - Email/password authentication uses the explicit REST API and opaque, revocable MongoDB sessions. Follow `docs/AUTH_DESIGN.md` for cookie lifetime, HMAC token storage, CSRF/origin rules, rate limits, identity uniqueness and future Google linking. `next-auth` is installed but unused; Google/recovery integration remains pending.
 - User email and Google identities stay globally unique after soft deletion. Omit absent `googleSubject` fields so the sparse unique index permits multiple password accounts. Bride/Groom roles belong to wedding membership, not registration data.
 - Run `npm run db:setup` to provision declared collections/indexes; `autoCreate` and `autoIndex` remain disabled. Authentication and wedding operations fail closed if required indexes are absent. Do not replace additive index creation with automatic index deletion.
+- Local development uses a separate loopback-only MongoDB replica set on port 27018, started with `npm run db:local:start`. Git-ignored `.env.development.local` points development at it while `.env.local` retains the Atlas settings and auth secret. See `README.md` for the local setup steps.
 - Node.js 22.17 or newer is required consistently by `package.json` and `README.md`; setup/integration scripts use Node's TypeScript stripping.
 
 ## Progress Tracking

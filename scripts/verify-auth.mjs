@@ -1,5 +1,5 @@
-// Opt-in integration check: creates temporary accounts ONLY in makemymarriage_dev,
-// exercises the running local app, then removes only its own users and sessions.
+// Opt-in integration check: creates temporary accounts ONLY in makemymarriage_dev
+// (local MongoDB or Atlas), exercises the running local app, then removes them.
 import assert from "node:assert/strict";
 import { randomBytes } from "node:crypto";
 import nextEnv from "@next/env";
@@ -7,6 +7,7 @@ import mongoose from "mongoose";
 import argon2 from "argon2";
 import { UserModel } from "../src/models/user.ts";
 import { AuthSessionModel } from "../src/models/auth-session.ts";
+import { verifyServerDatabase } from "./verify-server-database.mjs";
 
 nextEnv.loadEnvConfig(process.cwd(), true, { info() {}, error() {} });
 const base = new URL(
@@ -14,11 +15,12 @@ const base = new URL(
 );
 const uri = process.env.MONGODB_URI;
 let developmentDatabase = false;
-try { developmentDatabase = Boolean(uri && new URL(uri).pathname === "/makemymarriage_dev"); } catch { /* Invalid URI: fail without printing it. */ }
-if (
-  !developmentDatabase ||
-  !["localhost", "127.0.0.1"].includes(base.hostname)
-) {
+try {
+  developmentDatabase = Boolean(uri && new URL(uri).pathname === "/makemymarriage_dev");
+} catch {
+  /* Invalid URI: fail without printing it. */
+}
+if (!developmentDatabase || !["localhost", "127.0.0.1"].includes(base.hostname)) {
   console.error(
     "Refusing integration check: requires makemymarriage_dev and a local application URL.",
   );
@@ -74,6 +76,8 @@ try {
     autoIndex: false,
     serverSelectionTimeoutMS: 10_000,
   });
+  step = "server database identity";
+  await verifyServerDatabase(base);
   step = "anonymous access";
   expectStatus(await call("/api/v1/auth/me"), 401);
   const anonymousDashboard = await call("/dashboard");
@@ -150,10 +154,15 @@ try {
   createdIds.push(otherUser._id);
 
   step = "concurrent duplicate registration";
-  const racing = await Promise.all([0, 1].map(() => call("/api/v1/auth/register", {
-    method: "POST", body: { firstName: "Concurrent", email: emails[2], password },
-  })));
-  assert.deepEqual(racing.map(response => response.status).sort(), [201, 409]);
+  const racing = await Promise.all(
+    [0, 1].map(() =>
+      call("/api/v1/auth/register", {
+        method: "POST",
+        body: { firstName: "Concurrent", email: emails[2], password },
+      }),
+    ),
+  );
+  assert.deepEqual(racing.map((response) => response.status).sort(), [201, 409]);
   assert.equal(await UserModel.countDocuments({ email: emails[2] }), 1);
 
   step = "logout revocation";
@@ -237,7 +246,11 @@ try {
   );
 } catch {
   // Avoid printing assertions containing cookies, account records, or database diagnostics.
-  console.error(`FAIL at ${step}. Sensitive diagnostics suppressed.`);
+  console.error(
+    step === "server database identity"
+      ? "FAIL: start or restart the local app so it uses the same configured development database."
+      : `FAIL at ${step}. Sensitive diagnostics suppressed.`,
+  );
   process.exitCode = 1;
 } finally {
   if (mongoose.connection.readyState === 1) {

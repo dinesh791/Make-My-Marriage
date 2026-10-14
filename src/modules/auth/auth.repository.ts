@@ -19,24 +19,43 @@ async function connectToDatabase() {
     .then(([users, sessions, limits]) => {
       if (
         !users.some(
-          (index) => index.name === "users_email_unique" && index.unique && index.key.email === 1 && Object.keys(index.key).length === 1 && !index.sparse && !index.partialFilterExpression,
+          (index) =>
+            index.name === "users_email_unique" &&
+            index.unique &&
+            index.key.email === 1 &&
+            Object.keys(index.key).length === 1 &&
+            !index.sparse &&
+            !index.partialFilterExpression,
         ) ||
         !users.some(
           (index) =>
             index.name === "users_google_unique" &&
             index.unique &&
             index.sparse &&
-            index.key.googleSubject === 1 && Object.keys(index.key).length === 1 && !index.partialFilterExpression,
+            index.key.googleSubject === 1 &&
+            Object.keys(index.key).length === 1 &&
+            !index.partialFilterExpression,
         ) ||
         !sessions.some(
           (index) =>
-            index.name === "sessions_token_unique" && index.unique && index.key.tokenHash === 1 && Object.keys(index.key).length === 1 && !index.sparse && !index.partialFilterExpression,
+            index.name === "sessions_token_unique" &&
+            index.unique &&
+            index.key.tokenHash === 1 &&
+            Object.keys(index.key).length === 1 &&
+            !index.sparse &&
+            !index.partialFilterExpression,
         ) ||
         !sessions.some(
-          (index) => index.name === "sessions_expiry" && index.expireAfterSeconds === 0 && index.key.expiresAt === 1,
+          (index) =>
+            index.name === "sessions_expiry" &&
+            index.expireAfterSeconds === 0 &&
+            index.key.expiresAt === 1,
         ) ||
         !limits.some(
-          (index) => index.name === "auth_limits_expiry" && index.expireAfterSeconds === 0 && index.key.expiresAt === 1,
+          (index) =>
+            index.name === "auth_limits_expiry" &&
+            index.expireAfterSeconds === 0 &&
+            index.key.expiresAt === 1,
         )
       ) {
         throw new Error("Authentication storage is not provisioned; run npm run db:setup.");

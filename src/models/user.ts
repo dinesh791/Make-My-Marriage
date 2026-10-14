@@ -23,4 +23,5 @@ userSchema.index({ googleSubject: 1 }, { unique: true, sparse: true, name: "user
 
 export type UserRecord = InferSchemaType<typeof userSchema>;
 export const UserModel: Model<UserRecord> =
-  (mongoose.models.User as Model<UserRecord> | undefined) ?? mongoose.model<UserRecord>("User", userSchema);
+  (mongoose.models.User as Model<UserRecord> | undefined) ??
+  mongoose.model<UserRecord>("User", userSchema);

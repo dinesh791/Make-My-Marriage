@@ -12,7 +12,7 @@ nextEnv.loadEnvConfig(process.cwd(), process.env.NODE_ENV !== "production", {
 });
 const deadline = setTimeout(() => {
   console.error(
-    "Database setup timed out. Check your Atlas IP access list and connection settings.",
+    "Database setup timed out. Check that MongoDB is running and the connection settings are correct.",
   );
   process.exit(1);
 }, 60_000);
@@ -23,7 +23,7 @@ try {
   if (!uri || !/^\/[a-zA-Z0-9_-]+$/.test(new URL(uri).pathname)) {
     throw new Error("DATABASE_CONFIG_INVALID");
   }
-  phase = "connecting to MongoDB Atlas";
+  phase = "connecting to MongoDB";
   await mongoose.connect(uri, {
     autoCreate: false,
     autoIndex: false,
@@ -47,7 +47,7 @@ try {
 } catch (error) {
   const errorType = error instanceof Error ? error.name : "UnknownError";
   console.error(
-    `Database setup failed while ${phase} (${errorType}). Check the database name, Atlas access list, and index conflicts. Connection details were not printed.`,
+    `Database setup failed while ${phase} (${errorType}). Check that MongoDB is running, the database name and access settings, and index conflicts. Connection details were not printed.`,
   );
   process.exitCode = 1;
 } finally {

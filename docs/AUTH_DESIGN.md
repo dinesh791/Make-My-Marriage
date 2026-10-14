@@ -4,9 +4,9 @@ Decision recorded: 2026-10-13. This document refines the V1 database/API baselin
 
 ## Implemented scope
 
-Email/password registration, login, logout, current-user lookup, and a protected dashboard are implemented. The existing pages use the REST API. Google sign-in, email verification, password recovery, profile editing, and wedding membership are still pending. Google configuration is validated separately so missing Google credentials do not prevent email/password login.
+Email/password registration, login, logout, current-user lookup, and a protected dashboard are implemented. The existing pages use the REST API. Google sign-in, email verification, password recovery, and profile editing are still pending. Google configuration is validated separately so missing Google credentials do not prevent email/password login.
 
-The dashboard still displays an explicitly labelled sample wedding. A new account does not own that wedding. Bride/Groom is a wedding membership role, selected during future wedding creation/joining, not an account privilege accepted during registration.
+The dashboard displays saved wedding details for accounts with a wedding and a setup form for accounts without one. Bride/Groom is a wedding membership role selected during wedding creation, not an account privilege accepted during registration. Partner invitations and joining remain pending; the public website still uses sample data.
 
 ## Sessions
 
@@ -39,7 +39,7 @@ The 12 V1 domain collections remain the product baseline. This slice implements 
 
 Operational sessions/counters are hard-deleted on revocation/expiry, rather than using business-record soft deletion. Password reset/verification tokens are not implemented and will require their own hashed, expiring, single-use storage.
 
-`npm run db:setup` explicitly creates the three collections and adds their declared indexes. It preserves documents and existing indexes and is safe to rerun. It does not seed accounts. MongoDB automatic collection/index creation remains disabled. The repository checks the required indexes before authentication database operations; a deployment missing these indexes fails closed. Registration atomically creates the user and session using an Atlas transaction.
+`npm run db:setup` explicitly creates the three collections and adds their declared indexes. It preserves documents and existing indexes and is safe to rerun. It does not seed accounts. MongoDB automatic collection/index creation remains disabled. The repository checks the required indexes before authentication database operations; a deployment missing these indexes fails closed. Registration atomically creates the user and session using a MongoDB transaction, which requires a replica set locally as well as in Atlas.
 
 ## HTTP protections
 
@@ -58,10 +58,10 @@ MongoDB counters provide fixed-window limits across application instances: regis
 
 1. Use Node.js 22.17 or newer (database scripts use Node's TypeScript stripping).
 2. Set MONGODB_URI, AUTH_SECRET (at least 32 random characters), and the exact NEXT_PUBLIC_APP_URL origin in the Git-ignored `.env.local` file. The current workstation's secret was generated locally without printing it.
-3. Allow the workstation's current IP in Atlas. Use database-scoped readWrite access.
+3. For local development, run `npm run db:local:start` and put `MONGODB_URI=mongodb://127.0.0.1:27018/makemymarriage_dev?replicaSet=mmm_local&directConnection=true` in Git-ignored `.env.development.local`. The app keeps its secret and origin settings in `.env.local`. For Atlas, allow the workstation's current IP and use database-scoped readWrite access.
 4. Run `npm run db:setup`, then `npm run dev`.
-5. Open `/register`, create an account, sign out, and sign back in. A successful account appears in Atlas's users collection.
+5. Open `/register`, create an account, sign out, and sign back in. A successful account appears in the connected database's `users` collection.
 
-`npm test` covers validation, password verification, request-origin/body checks, DTO isolation, token handling and rate-limit behavior. `npm run test:auth:integration` tests the running local app against `makemymarriage_dev`, creates uniquely named temporary accounts, and removes only those accounts and their sessions in a finally block. Temporary rate counters expire automatically. The script refuses non-local app hosts or other database names. Set AUTH_TEST_BASE_URL only if the local app uses another port (the server's configured origin must also match). Never run this verification against production.
+`npm test` covers validation, password verification, request-origin/body checks, DTO isolation, token handling and rate-limit behavior. `npm run test:auth:integration` tests the running local app against `makemymarriage_dev` in local MongoDB or Atlas, creates uniquely named temporary accounts, and removes only those accounts and their sessions in a finally block. Temporary rate counters expire automatically. The script refuses non-local app hosts or other database names. Set AUTH_TEST_BASE_URL only if the local app uses another port (the server's configured origin must also match). Never run this verification against production.
 
 Before public launch, complete Google sign-in, email verification/recovery decisions, trusted per-IP abuse controls, auth monitoring that redacts secrets, HTTPS deployment configuration and production database backup/retention decisions.
