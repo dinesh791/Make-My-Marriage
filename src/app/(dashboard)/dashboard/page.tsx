@@ -1,20 +1,58 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Brand } from "@/components/shared/brand";
+import { SignOutButton } from "@/components/shared/sign-out-button";
+import { requireUser } from "@/lib/auth/current-user";
+import { WeddingSetupForm } from "@/components/shared/wedding-setup-form";
+import { getMyWedding } from "@/modules/wedding/wedding.service";
+import { toWeddingDto } from "@/modules/wedding/wedding.dto";
 
 const workspaceLinks = [
   ["Overview", "O", "#overview"],
   ["Couple details", "C", "#couple"],
   ["Wedding events", "E", "#events"],
   ["Invitation", "I", "#invitation"],
-  ["Wedding website", "W", "/w/dinesh-usha"],
+  ["Wedding website", "W", "#website"],
   ["Shopping checklist", "S", "#shopping"],
   ["Catering", "F", "#catering"],
   ["Photo gallery", "G", "#gallery"],
   ["Livestream", "L", "#livestream"],
 ];
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const user = await requireUser();
+  const savedWedding = await getMyWedding(user.id);
+  if (!savedWedding) {
+    return (
+      <main className="dashboard-app setup-dashboard">
+        <div className="setup-dashboard-inner">
+          <header className="dashboard-topbar">
+            <div>
+              <span className="eyebrow">Your wedding workspace</span>
+              <p>Signed in as {user.email}</p>
+            </div>
+            <SignOutButton />
+          </header>
+          <div className="dashboard-welcome">
+            <div>
+              <span className="eyebrow">Vanakkam, {user.firstName}</span>
+              <h1>Let&apos;s set up your wedding</h1>
+              <p>Enter the key details below. Your account will be connected as Bride or Groom.</p>
+            </div>
+            <Link className="button button-outline" href="/w/dinesh-usha">
+              View sample website ↗
+            </Link>
+          </div>
+          <WeddingSetupForm />
+        </div>
+      </main>
+    );
+  }
+  const wedding = toWeddingDto(savedWedding);
+  const today = new Intl.DateTimeFormat("en-IN", {
+    dateStyle: "full",
+    timeZone: "Asia/Kolkata",
+  }).format(new Date());
   return (
     <main className="dashboard-app" id="overview">
       <div className="dashboard-layout">
@@ -23,7 +61,7 @@ export default function DashboardPage() {
           <p className="sidebar-label">Your workspace</p>
           <nav className="sidebar-nav" aria-label="Wedding workspace">
             {workspaceLinks.map(([label, icon, href], index) =>
-              index === 0 || index === 4 ? (
+              index === 0 ? (
                 <Link
                   className={index === 0 ? "active" : ""}
                   data-icon={icon}
@@ -43,9 +81,7 @@ export default function DashboardPage() {
           <div className="sidebar-bottom">
             <p className="sidebar-label">Account</p>
             <nav className="sidebar-nav" aria-label="Account">
-              <span className="action-disabled">
-                Sign out <small>Authentication coming soon</small>
-              </span>
+              <SignOutButton />
             </nav>
           </div>
         </aside>
@@ -53,37 +89,49 @@ export default function DashboardPage() {
         <section className="dashboard-main">
           <header className="dashboard-topbar">
             <div>
-              <span className="eyebrow">Wedding workspace preview</span>
-              <p>Tuesday, 13 October 2026</p>
+              <span className="eyebrow">Your wedding workspace</span>
+              <p>{today}</p>
             </div>
-            <div className="avatar" aria-label="Dinesh and Usha">
-              DU
+            <div className="avatar" aria-label={user.firstName}>
+              {user.firstName.slice(0, 1).toUpperCase()}
             </div>
           </header>
           <div className="dashboard-welcome">
             <div>
-              <span className="eyebrow">Vanakkam, Dinesh &amp; Usha</span>
+              <span className="eyebrow">Vanakkam, {user.firstName}</span>
               <h1>Your wedding, at a glance</h1>
-              <p>Keep the little details moving and enjoy the big moments.</p>
+              <p>
+                Your wedding details are saved. Partner invitations and planning tools are the next
+                step.
+              </p>
             </div>
             <Link className="button button-outline" href="/w/dinesh-usha">
-              Preview website ↗
+              View sample website ↗
             </Link>
           </div>
 
           <section className="dashboard-hero" id="couple" aria-label="Wedding overview">
             <div className="dashboard-hero-copy">
-              <span className="eyebrow">The celebration is getting closer</span>
-              <h2 className="serif">Dinesh &amp; Usha</h2>
-              <p>Wednesday, 20 January 2027 · Sivan Mahal, Salem</p>
-              <Link className="button" href="/w/dinesh-usha">
-                View wedding website <span aria-hidden="true">→</span>
-              </Link>
+              <span className="eyebrow">Your wedding · {wedding.slug}</span>
+              <h2 className="serif">{wedding.title}</h2>
+              <p>
+                {new Intl.DateTimeFormat("en-IN", {
+                  dateStyle: "full",
+                  timeZone: wedding.timezone,
+                }).format(new Date(wedding.weddingDate))}{" "}
+                · {wedding.venueName}, {wedding.venueAddress}
+              </p>
+              {wedding.story && <p>{wedding.story}</p>}
+              {wedding.mapsUrl && (
+                <Link className="button" href={wedding.mapsUrl} target="_blank" rel="noreferrer">
+                  Open venue map <span aria-hidden="true">↗</span>
+                </Link>
+              )}
             </div>
             <Image
               className="dashboard-hero-image"
               src="/images/wedding/stitch-couple.webp"
-              alt="Wedding portrait of a couple"
+              alt="A wedding couple"
               width={760}
               height={500}
               priority
@@ -92,16 +140,16 @@ export default function DashboardPage() {
 
           <section className="dashboard-stats" aria-label="Wedding summary">
             <article className="stat-card">
-              <span>Days until the wedding</span>
-              <strong>99</strong>
+              <span>Events planned</span>
+              <strong>—</strong>
             </article>
             <article className="stat-card">
               <span>Events in your schedule</span>
-              <strong>4</strong>
+              <strong>—</strong>
             </article>
             <article className="stat-card">
               <span>Planning checklist</span>
-              <strong>18 / 42</strong>
+              <strong>—</strong>
             </article>
           </section>
 
@@ -109,52 +157,12 @@ export default function DashboardPage() {
             <section className="dashboard-card" id="events">
               <div className="card-heading">
                 <h2>Upcoming events</h2>
-                <span className="coming-soon">Sample data</span>
+                <span className="coming-soon">Coming soon</span>
               </div>
-              <div className="event-row">
-                <div className="event-date">
-                  <strong>08</strong>
-                  <span>Jan</span>
-                </div>
-                <div>
-                  <h3>Engagement</h3>
-                  <p>6:00 PM · Sivan Mahal</p>
-                </div>
-                <span className="status-pill">Planned</span>
-              </div>
-              <div className="event-row">
-                <div className="event-date">
-                  <strong>18</strong>
-                  <span>Jan</span>
-                </div>
-                <div>
-                  <h3>Nalangu</h3>
-                  <p>4:30 PM · Sivan Mahal</p>
-                </div>
-                <span className="status-pill">Planned</span>
-              </div>
-              <div className="event-row">
-                <div className="event-date">
-                  <strong>20</strong>
-                  <span>Jan</span>
-                </div>
-                <div>
-                  <h3>Muhurtham</h3>
-                  <p>6:00 AM · Sivan Mahal</p>
-                </div>
-                <span className="status-pill">Planned</span>
-              </div>
-              <div className="event-row">
-                <div className="event-date">
-                  <strong>20</strong>
-                  <span>Jan</span>
-                </div>
-                <div>
-                  <h3>Reception</h3>
-                  <p>6:00 PM · Sivan Mahal</p>
-                </div>
-                <span className="status-pill">Planned</span>
-              </div>
+              <p className="workspace-placeholder">
+                Your saved wedding details appear above. Add Engagement, Nalangu, Muhurtham, and
+                Reception dates when event planning is available.
+              </p>
             </section>
 
             <section className="dashboard-card" id="invitation">
@@ -162,9 +170,9 @@ export default function DashboardPage() {
                 <h2>Quick actions</h2>
               </div>
               <div className="action-list">
-                <Link href="/w/dinesh-usha">
-                  Preview wedding website <span>↗</span>
-                </Link>
+                <span className="action-disabled" id="website">
+                  Wedding website <small>Coming soon</small>
+                </span>
                 <span className="action-disabled">
                   Edit wedding details <small>Coming soon</small>
                 </span>
@@ -175,10 +183,9 @@ export default function DashboardPage() {
                   Share wedding link <small>Coming soon</small>
                 </span>
               </div>
-              <div className="progress" aria-label="Planning checklist 42 percent complete">
-                <span />
-              </div>
-              <p className="progress-note">Planning checklist · sample progress</p>
+              <p className="progress-note">
+                Your wedding has been saved. Partner invitations are the next step.
+              </p>
             </section>
           </div>
         </section>

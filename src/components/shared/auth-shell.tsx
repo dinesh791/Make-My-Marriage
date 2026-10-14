@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { Brand } from "@/components/shared/brand";
 
 export function AuthShell({ children }: { children: ReactNode }) {
@@ -36,6 +37,12 @@ export function AuthShell({ children }: { children: ReactNode }) {
         <div className="auth-content">
           <div className="auth-mobile-brand">
             <Brand />
+          </div>
+          <div className="login-return-row">
+            <Link className="login-return-link" href="/">
+              <span aria-hidden="true">←</span>
+              Back to website
+            </Link>
           </div>
           {children}
         </div>

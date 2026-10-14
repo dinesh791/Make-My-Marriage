@@ -12,10 +12,12 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "db:setup": "node --experimental-strip-types scripts/setup-database.mjs",
+    "test:auth:integration": "node --experimental-strip-types scripts/verify-auth.mjs"
   },
   "engines": {
-    "node": ">=20.9.0"
+    "node": ">=22.17.0"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1147.0",
@@ -27,6 +29,7 @@
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "resend": "^6.32.1",
+    "server-only": "^0.0.1",
     "zod": "^4.6.5"
   },
   "devDependencies": {

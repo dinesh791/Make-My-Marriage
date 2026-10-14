@@ -98,6 +98,8 @@ Use standard HTTP methods such as GET, POST, PATCH/PUT, and DELETE, with consist
 
 Authentication supports email/password and Google login. V1 roles are BRIDE and GROOM. Both can manage their wedding. Guests do not have application accounts. 
 
+The first implemented slice supports email/password through the versioned REST API and revocable MongoDB sessions in HTTP-only cookies. Google login remains a V1 requirement awaiting provider integration. Session/counter infrastructure, identity uniqueness, and request protections are recorded in [AUTH_DESIGN.md](AUTH_DESIGN.md).
+
 V1 rule: one user has one active wedding. This can be relaxed later. 
 
 ## **8. Wedding Membership** 

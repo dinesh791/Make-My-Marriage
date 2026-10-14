@@ -1,42 +1,52 @@
 # Make My Marriage — Project Status
 
-Last reviewed: 2026-10-13
+Last reviewed: 2026-10-14
 
 This is the living progress tracker for the project. `AGENTS.md` contains persistent project and implementation guidance. The confirmed V1 requirements and design are in `PRD.md`, `SYSTEM_DESIGN.md`, and `DB_API_DESIGN.md` in this folder.
 
 ## Current Status
 
 - The marketing landing page has been removed by product decision. `/` directly renders the Dinesh & Usha sample wedding without changing the URL; the same public wedding is available at `/w/dinesh-usha`. Its Login link opens `/login`, where sign-up is available.
-- Stitch's exported Tamil wedding website design is implemented as the sample public wedding presentation. Login/sign-up and couple dashboard previews remain presentation-only.
-- These screens are presentation-only. Authentication, wedding persistence, dashboard actions, and data-backed public wedding pages are not implemented.
+- Stitch's exported Tamil wedding website design is implemented as the sample public wedding presentation. Login/sign-up are connected to email/password authentication; the dashboard requires a valid session.
+- Wedding creation and membership persistence are implemented in source. A signed-in user can save one wedding with a Bride/Groom role and see the saved date/venue on their dashboard. Partner invitations, wedding editing, and data-backed public wedding pages are not implemented.
 - Treat sample events, checklist counts, and wedding details in these screens as illustrative rather than live product data.
+- MongoDB Atlas development connectivity was previously verified for `makemymarriage_dev`; the latest `npm run db:setup` attempt failed while connecting to Atlas, so creation of the new wedding collections/indexes is not verified. The auth collections and account/session persistence were previously provisioned and verified.
 
 ## Completed and Verified
 
+- Atlas development connection check passed on 2026-10-13 after the current public IP was added to the access list. The expected database-scoped `readWrite` role was confirmed. Subsequent provisioning and real authentication integration checks exercised account/session writes successfully.
+- Implemented the User model with normalized unique email, omitted optional Google identity with sparse uniqueness, Argon2id password hashes, and safe profile DTOs. Identity identifiers remain reserved after soft deletion as documented in `AUTH_DESIGN.md`.
+- Implemented registration, login, logout, and current-user REST endpoints, connected forms with error/pending states, revocable HMAC-digested database sessions, Remember me, server-side dashboard protection, and functional sign-out. Auth mutations validate the configured origin; login/registration validate bounded JSON and use shared database rate counters.
+- Added `weddings` and `wedding_members` models, UTC wedding-date storage with the Asia/Kolkata display timezone, safe DTOs, and explicit indexes including the active one-wedding-per-user rule. Added authenticated create/list/member-get endpoints and an onboarding form; the dashboard now reads the real saved wedding instead of sample data for accounts that have one.
+- Added unit coverage for wedding request validation, safe HTTP/HTTPS map links, and declared uniqueness constraints. `npm run typecheck`, `npm test` (3 files, 15 tests), and `npm run build` pass. The latest Atlas provisioning attempt did not reach the cluster; runtime persistence and the new collections therefore remain unverified against Atlas.
+- `npm run db:setup` created the three authentication collections and declared indexes without seeding accounts. A private AUTH_SECRET was generated in Git-ignored `.env.local` without printing it. Google credentials are no longer required for email/password login.
+- `npm run typecheck`, `npm test` (2 test files, 13 tests), and `npm run build` passed during authentication implementation. The opt-in local HTTP/Atlas integration check passed registration, duplicate-email handling, multiple password-only users, login, session rotation/revocation/expiry, protected dashboard access, suspended/deleted users, validation and rate limits; temporary accounts and sessions were removed afterward. Production runtime dependency audit reported zero vulnerabilities.
+- The registration page was inspected in the in-app browser at desktop width; its fields and existing visual layout render correctly. This is not a full mobile or browser automation regression suite.
 - `/` and `/w/dinesh-usha` render the same public wedding presentation; `/` stays at the root URL. The shared page component supports both routes, and its Login link opens `/login`. No marketing landing page is present.
-- Stitch-inspired login and registration layouts, the full public wedding presentation at `/w/[slug]`, and a responsive couple dashboard preview are implemented with illustrative sample data.
+- Stitch-inspired login and registration layouts, the full public wedding presentation at `/w/[slug]`, and a responsive couple dashboard are implemented. Wedding content remains illustrative sample data.
 - The public wedding preview follows the provided Stitch export's section order and sample identity: Dinesh & Usha, Sivan Mahal, Salem. It includes a live countdown and marks gallery upload/livestream setup as unavailable until those workflows exist.
 - The public wedding header brand mark matches the Stitch export: a burgundy rounded-square tile with the intertwined gold-circle wedding emblem and serif wordmark.
-- The login preview includes a top-right “Back to website” link that returns to the root wedding site.
+- Login and registration share the same top-right “Back to website” link through `AuthShell`, returning to `/` with the existing hover and keyboard-focus styling. Source review confirms both pages use the shared shell; browser verification of this navigation update remains pending. Targeted ESLint was stopped after making no progress or producing diagnostics; it did not confirm a pass.
 - Stitch gallery, map, and broadcast artwork is referenced directly from its public Google-hosted export path (without server-side optimization, because this environment blocks outbound CDN requests); wedding-owned media should move to R2 when the gallery workflow is connected.
 - Public wedding section links remain available on mobile in a horizontally scrollable navigation row.
 - The couple image previously stored under `public/images/landing/` is now under `public/images/wedding/` and reused by the product screens.
 - `PRD.md` and `SYSTEM_DESIGN.md` describe the root sample-wedding route and `/w/[slug]`; `DB_API_DESIGN.md` uses public-wedding terminology for the endpoint.
 - `/api/v1/health` returns the documented success response envelope. Shared success/error response helpers and a focused unit test exist.
-- Foundation helpers exist for Mongoose connection reuse, environment validation, Argon2 password hashing, session-cookie options/types, Cloudflare R2 client creation, and Resend client creation. These clients and helpers are not wired into end-to-end product workflows.
+- Mongoose connection reuse, environment validation, password hashing and session cookies are connected to authentication. Cloudflare R2 and Resend client helpers remain unwired to product workflows.
 - Next.js route locations exist for login, registration, password recovery, partner invite, dashboard, and `/w/[slug]`.
 - The Stitch-derived couple image is retained under `public/images/wedding/` for product UI reuse.
 
 ## Current Implementation Reality
 
-- `/api/v1/health` is the only REST endpoint under `src/app/api/v1`.
-- Login and registration are visual forms only; submit controls are not connected to an authentication API. Forgot-password, reset-password, and partner-invite remain placeholders.
-- Dashboard and public wedding pages currently use illustrative hard-coded content. Dashboard actions and public wedding data are not backed by APIs or MongoDB.
+- REST endpoints exist for health and auth registration/login/logout/current-user lookup.
+- Email/password login and registration are functional. Google sign-in is visibly unavailable; forgot-password, reset-password, and partner-invite remain placeholders. Email verification, profile APIs and Google account linking are not implemented.
+- The dashboard reads saved wedding details from MongoDB, but event/checklist cards and the public wedding website are still not data-backed. Partner invite creation/acceptance and wedding edit/archive APIs are pending.
 - Product screens are English-only at present. Tamil product-page localization remains pending.
-- `src/models/`, `src/modules/`, `src/types/`, and `src/components/ui/` contain guidance files, but no Mongoose models, feature modules, shared application types, or UI primitives yet.
-- The only current test file is `tests/unit/http/api-response.test.ts`. There is no feature-level integration or end-to-end coverage yet.
-- Authentication is not enabled. `next-auth` is installed, but provider/session behavior is not finalized. Password hashing and cookie settings alone do not provide authentication.
-- `npm run typecheck`, `npm test` (1 test file, 2 tests), and `npm run build` pass after the root-route update. Targeted ESLint and Prettier checks also pass. The build includes `/`, `/login`, `/register`, `/dashboard`, and `/w/[slug]`.
+- `src/models/` contains User, AuthSession, AuthRateLimit, Wedding, and WeddingMember schemas. Auth and wedding modules each follow controller/service/repository/validator/DTO layers. General UI primitives remain pending.
+- Unit tests cover HTTP envelopes, auth, and wedding schema boundaries. `scripts/verify-auth.mjs` provides an opt-in local HTTP/Atlas authentication integration check with temporary account cleanup; wedding Atlas integration verification is pending. Automated full-browser coverage is still pending.
+- Email/password authentication uses opaque database sessions, not the installed but unused `next-auth` package. The current scope and remaining Google/recovery requirements are explicit in `AUTH_DESIGN.md`.
+- Atlas settings are stored in Git-ignored `.env.local`, targeting `makemymarriage_dev`. Credentials were not printed. The latest setup attempt failed while connecting to Atlas, before collection setup began; verify current IP allow-list, URI/database name, and database user credentials before retrying. The user-provided screenshot exposed a database password; rotate it in Atlas and update only the local ignored `.env.local` value.
+- The Mongoose helper keeps `autoCreate` and `autoIndex` disabled. Run the explicit additive `db:setup` command before authentication/wedding features; repositories verify required indexes. The health endpoint still does not check database connectivity.
 - Production-server smoke check confirmed `/` returns `200` directly (no redirect), `/w/dinesh-usha` returns `200`, and `/login` returns `200`. Both wedding routes contain Dinesh & Usha and a Login link to `/login`.
 - Targeted ESLint on changed TSX files passes. Full `npm run lint` did not finish within about two minutes and was stopped; it produced no lint diagnostics before stopping.
 - A full browser screenshot comparison of the running app against the exported Stitch screenshot has not yet been completed.
@@ -45,8 +55,8 @@ This is the living progress tracker for the project. `AGENTS.md` contains persis
 
 Follow the implementation order in `DB_API_DESIGN.md` and update this section as work is completed:
 
-1. Finalize authentication and session choices; implement users, email/password and Google sign-in, registration, sign-out, current-user lookup, password recovery, and protected routes.
-2. Add Mongoose models, indexes, repositories, wedding creation/editing, `WeddingMember` roles, the one-active-wedding-per-user rule, and expiring one-time partner invitations.
+1. Finish authentication: configure Google OAuth and Resend, implement safe Google account linking and password recovery, decide/implement email verification, add profile APIs, and complete deployment abuse controls/monitoring. Email/password accounts, sessions and dashboard protection are complete.
+2. Finish the wedding domain: retry Atlas setup, verify create/read against Atlas, add wedding edit/archive and expiring one-time partner invite create/accept, and seed default invitation/checklist data when those modules are added.
 3. Implement event management for Engagement, Nalangu, Muhurtham, and Reception.
 4. Implement invitation configuration/templates, preview and publishing, copy-link/WhatsApp sharing, email invitations, and data-backed public wedding APIs/pages at `/w/[slug]`.
 5. Implement the shopping checklist and catering details.
@@ -59,11 +69,12 @@ Follow the implementation order in `DB_API_DESIGN.md` and update this section as
 - Keep the modular monolith and Wedding-centered data model. Route handlers/controllers handle HTTP concerns, services own business rules, repositories own database access, and models live in `src/models/`.
 - Guests remain account-free in V1. Public responses must expose only safe wedding data; bride/groom membership controls administrative access.
 - Store media objects in R2 and media metadata/object keys in MongoDB. Keep credentials server-side. Store timestamps in UTC and use `Asia/Kolkata` for wedding display.
-- Finalize the authentication/session approach before building protected product flows. The design recommends secure HTTP-only session cookies; the selected integration must also support the documented email/password and Google sign-in requirements.
-- Resolve the Node.js version mismatch before CI/deployment: `package.json` allows `>=20.9.0`, while `README.md` recommends 22.17 or newer.
+- Follow `AUTH_DESIGN.md` for the implemented session/identity rules. Google OAuth must use a maintained provider integration and avoid implicit email-only account linking. API authentication and wedding-membership authorization remain separate concerns.
+- Node.js minimum version is now consistently 22.17.0 in package metadata and README.
+- Authentication uses conservative shared global and per-email rate limits. Tune them and add trusted per-IP edge controls before public launch; global caps can affect unrelated users. Email verification/recovery and operational monitoring are still launch requirements.
 
 ## Next Recommended Step
 
-Complete a browser-based desktop/mobile comparison of the running app against the Stitch export and resolve the slow full-project lint run. Then finalize the authentication/session decision and implement the user model and authentication flow before wiring the dashboard to wedding data. Make the public website data-backed as the wedding and public API modules are implemented, moving the preview's externally hosted artwork to R2-backed wedding media as part of the gallery workflow. Before each implementation step, review relevant sections in `PRD.md`, `SYSTEM_DESIGN.md`, and `DB_API_DESIGN.md`, and consult the installed Next.js guides as required by `AGENTS.md`.
+Rotate the exposed Atlas database-user password in Atlas and update its local `.env.local` value, confirm the current IP is allowed in Atlas Network Access, then rerun `npm run db:setup`. Verify the new wedding API with a temporary account and remove the test data afterward. Next implement partner invites and wedding editing/archive, followed by events. Google OAuth, Resend, the browser-based desktop/mobile comparison, and the slow full-project lint run remain pending. Before each implementation step, review relevant design sections and the installed Next.js guides as required by `AGENTS.md`.
 
 After each feature, verify its implementation in source, record the checks actually run, move completed work out of the pending list, and revise the next step.

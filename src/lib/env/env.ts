@@ -6,6 +6,8 @@ const databaseSchema = baseSchema.extend({
 });
 const authSchema = baseSchema.extend({
   AUTH_SECRET: z.string().min(32, "AUTH_SECRET must be at least 32 characters."),
+});
+const googleSchema = baseSchema.extend({
   GOOGLE_CLIENT_ID: z.string().min(1, "GOOGLE_CLIENT_ID is required."),
   GOOGLE_CLIENT_SECRET: z.string().min(1, "GOOGLE_CLIENT_SECRET is required."),
 });
@@ -32,5 +34,6 @@ function parseEnvironment<T extends z.ZodType>(schema: T): z.output<T> {
 
 export const getDatabaseEnv = () => parseEnvironment(databaseSchema);
 export const getAuthEnv = () => parseEnvironment(authSchema);
+export const getGoogleEnv = () => parseEnvironment(googleSchema);
 export const getR2Env = () => parseEnvironment(r2Schema);
 export const getEmailEnv = () => parseEnvironment(emailSchema);

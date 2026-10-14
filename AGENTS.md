@@ -38,29 +38,34 @@ docs/                              Confirmed designs and living project status
 public/images/wedding/             Reusable Stitch-derived wedding image
 src/
   app/
-    (auth)/                         Login/register UI previews; recovery and partner-invite placeholders
-    (dashboard)/dashboard/          Stitch-inspired dashboard preview (sample data)
+    (auth)/                         Connected email/password forms; recovery and partner-invite placeholders
+    (dashboard)/dashboard/          Protected dashboard with wedding setup and saved wedding details
     (public)/w/[slug]/              Stitch-inspired public wedding preview (sample data)
+    api/v1/auth/                    Registration, login, logout, and current-user endpoints
+    api/v1/weddings/                Create/list weddings and get member details
     api/v1/health/                  Implemented health endpoint
     page.tsx                         Renders the sample wedding at `/`
     globals.css                      Shared product surfaces and responsive styling
   components/
-    shared/                          Brand, authentication shell, wedding countdown
+    shared/                          Brand, authentication shell, wedding setup form, wedding countdown
     ui/                              UI-primitives guidance only
   lib/
-    auth/                            Password helper and session-cookie/type foundation
+    auth/                            Password hashing, session cookies, server-side account guard
     db/                              Cached Mongoose connection helper
     email/                            Resend client helper
     env/                              Environment validators
     http/                             API response envelopes and AppError
     i18n/                             Locale types; product-page localization remains pending
     r2/                               Cloudflare R2 S3 client helper
-  models/                             Model guidance only; no Mongoose models
-  modules/                            Module-boundary guidance only; no feature modules
+  models/                             Auth plus wedding and membership schemas
+  modules/auth/                       Auth controller, service, repository, validators, and DTO
+  modules/wedding/                    Wedding controller, service, repository, validators, and DTO
   types/                              Shared-type guidance only; no shared application types
 tests/
   unit/http/api-response.test.ts      Tests for success/error response envelopes
+  unit/auth/auth.test.ts              Isolated authentication/security tests
   README.md                           Integration and end-to-end test guidance
+scripts/                             Explicit DB provisioning and opt-in local auth integration check
 .env.example                          Empty placeholders for service configuration
 ```
 
@@ -74,8 +79,10 @@ tests/
 - The public wedding design preview currently references Stitch-exported imagery from the narrowly scoped `lh3.googleusercontent.com/aida-public/**` path and renders those originals without server optimization. Move wedding/gallery media to R2 as the data-backed gallery workflow is implemented.
 - Use expiring, one-time partner-invite tokens and store token hashes. Mutable business records use soft deletion as specified in the DB/API design; email delivery history is audit-like.
 - Store timestamps in UTC and use `Asia/Kolkata` as the V1 wedding timezone. Keep secrets server-side.
-- The exact authentication/session integration still needs to be finalized. `next-auth` is installed, but authentication is explicitly not enabled; password hashing and cookie options alone are not authentication.
-- Node version guidance currently differs: `package.json` allows `>=20.9.0`, while `README.md` recommends Node.js 22.17 or newer. Resolve this consistently before CI/deployment setup.
+- Email/password authentication uses the explicit REST API and opaque, revocable MongoDB sessions. Follow `docs/AUTH_DESIGN.md` for cookie lifetime, HMAC token storage, CSRF/origin rules, rate limits, identity uniqueness and future Google linking. `next-auth` is installed but unused; Google/recovery integration remains pending.
+- User email and Google identities stay globally unique after soft deletion. Omit absent `googleSubject` fields so the sparse unique index permits multiple password accounts. Bride/Groom roles belong to wedding membership, not registration data.
+- Run `npm run db:setup` to provision declared collections/indexes; `autoCreate` and `autoIndex` remain disabled. Authentication and wedding operations fail closed if required indexes are absent. Do not replace additive index creation with automatic index deletion.
+- Node.js 22.17 or newer is required consistently by `package.json` and `README.md`; setup/integration scripts use Node's TypeScript stripping.
 
 ## Progress Tracking
 

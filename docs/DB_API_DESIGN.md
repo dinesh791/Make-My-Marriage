@@ -116,7 +116,7 @@ Page 1
 
 **Soft delete:** Mutable records use deletedAt: null or a timestamp. Normal queries exclude records where deletedAt is not null. 
 
-**Active-only uniqueness:** Where soft deletion is supported, use MongoDB partial unique indexes so a deleted record does not block a replacement active record. 
+**Active-only uniqueness:** Mutable wedding records use MongoDB partial unique indexes so a deleted record does not block a replacement active record. User identity identifiers are an explicit exception: email and Google subject stay reserved after soft deletion to prevent identity reuse. See [Authentication implementation](AUTH_DESIGN.md).
 
 **Enums:** Role, event type, status, and category values are validated at the model and API boundary. 
 
@@ -130,7 +130,7 @@ Page 1
 |email|String|Yes|Lowercased; unique|
 |emailVerifiedAt|Date|null|No|Email verification timestamp|
 |passwordHash|String|null|No|Present for email/password users|
-|googleSubject|String|null|No|Google account subject; sparse unique|
+|googleSubject|String (omitted when absent)|No|Google account subject; sparse unique; never default to null|
 |firstName|String|Yes|User display name|
 |lastName|String|null|No|Optional|
 |profilePhotoKey|String|null|No|R2 object key|
@@ -147,6 +147,8 @@ Page 1
 - Unique index on email. 
 
 - Sparse unique index on googleSubject. 
+
+Email and Google identity uniqueness applies to deleted accounts too. Optional Google subjects are omitted so the sparse index does not index repeated null values. The authentication implementation adds operational `auth_sessions` and `auth_rate_limits` collections alongside the 12 domain collections; see [AUTH_DESIGN.md](AUTH_DESIGN.md) for fields, indexes, expiry, and session choices.
 
 - Optional index on status and deletedAt for account administration. 
 
@@ -202,6 +204,8 @@ Page 2
 
 
 Recommended active-only partial unique indexes: { weddingId, userId } where status=ACTIVE, and { weddingId, role } where status=ACTIVE. This allows a removed membership to be re-created later without violating uniqueness. 
+
+For the V1 one-active-wedding-per-user rule, also enforce a partial unique index on { userId } where status=ACTIVE. When an account leaves or its wedding is archived, its active membership must be transitioned out of ACTIVE before it can join another wedding.
 
 ## **8. wedding_partner_invites Collection** 
 
@@ -441,6 +445,7 @@ This keeps Wedding as the central aggregate while allowing each feature to evolv
 |weddings|slug|Unique public lookup|
 |wedding_members|weddingId + userId|Partial unique where status=ACTIVE|
 |wedding_members|weddingId + role|Partial unique where status=ACTIVE|
+|wedding_members|userId|Partial unique where status=ACTIVE; enforces one active wedding per account|
 |wedding_partner_invites|tokenHash|Unique lookup|
 |wedding_partner_invites|expiresAt|TTL / cleanup|
 |events|weddingId + type|Partial unique where deletedAt is null|
@@ -464,7 +469,7 @@ Page 7
 
 **Content type:** application/json except file-upload flows. 
 
-**Authentication:** Secure HTTP-only session cookie is recommended for the web application. The exact auth library can be selected during implementation. 
+**Authentication:** The email/password implementation uses a secure HTTP-only cookie with an opaque, revocable MongoDB session. The browser receives a random token; MongoDB stores its HMAC digest and expiry. See [AUTH_DESIGN.md](AUTH_DESIGN.md). Google sign-in and recovery remain pending.
 
 **Validation:** Validate all request parameters and body fields at the API boundary. Zod is recommended for request DTO validation. 
 

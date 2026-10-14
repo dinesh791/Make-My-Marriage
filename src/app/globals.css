@@ -254,6 +254,32 @@ p {
   display: grid;
   gap: 1.05rem;
 }
+.auth-fields {
+  display: grid;
+  min-width: 0;
+  gap: 1.05rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.field-hint {
+  margin: 0.5rem 0 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+.auth-error {
+  margin: 0;
+  padding: 0.75rem;
+  border-radius: 4px;
+  background: var(--rose);
+  color: var(--wine-dark);
+  font-size: 0.85rem;
+}
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+  transform: none;
+}
 .auth-options {
   display: flex;
   align-items: center;
@@ -269,6 +295,48 @@ p {
 }
 .auth-check input {
   accent-color: var(--wine);
+}
+.setup-dashboard {
+  min-height: 100vh;
+  padding: clamp(1rem, 5vw, 4rem);
+}
+.setup-dashboard-inner {
+  width: min(100%, 920px);
+  margin: 0 auto;
+}
+.setup-card {
+  margin: 2rem auto;
+  padding: clamp(1.2rem, 4vw, 2.5rem);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: white;
+  box-shadow: 0 14px 40px #351b2410;
+}
+.setup-card h2 {
+  margin: 0.35rem 0;
+  font-size: 1.6rem;
+}
+.setup-card > p,
+.workspace-placeholder {
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+.setup-form {
+  margin-top: 1.4rem;
+}
+.setup-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+.setup-textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+.setup-dashboard .dashboard-topbar > button {
+  width: auto;
+  padding: 0.7rem 1rem;
 }
 .text-link {
   color: var(--wine);
@@ -1576,6 +1644,9 @@ p {
 }
 .dashboard-card {
   padding: 1.3rem;
+}
+.workspace-placeholder {
+  margin: 1rem 0 0;
 }
 .card-heading {
   display: flex;
