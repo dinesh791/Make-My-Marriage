@@ -1,19 +1,21 @@
 # Make My Marriage — Project Status
 
-Last reviewed: 2026-10-14
+Last reviewed: 2026-10-15
 
 This is the living progress tracker for the project. `AGENTS.md` contains persistent project and implementation guidance. The confirmed V1 requirements and design are in `PRD.md`, `SYSTEM_DESIGN.md`, and `DB_API_DESIGN.md` in this folder.
 
 ## Current Status
 
 - The marketing landing page has been removed by product decision. `/` directly renders the Dinesh & Usha sample wedding without changing the URL; the same public wedding is available at `/w/dinesh-usha`. Its Login link opens `/login`, where sign-up is available.
-- Stitch's exported Tamil wedding website design is implemented as the sample public wedding presentation. Login/sign-up are connected to email/password authentication; the dashboard requires a valid session.
-- Wedding creation and membership persistence are implemented in source. A signed-in user can save one wedding with a Bride/Groom role and see the saved date/venue on their dashboard. Partner invitations, wedding editing, and data-backed public wedding pages are not implemented.
-- Treat sample events, checklist counts, and wedding details in these screens as illustrative rather than live product data.
+- Stitch's exported Tamil wedding website design remains available as the Dinesh & Usha sample. Other active wedding slugs now render a data-backed public website without guest login. Login/sign-up are connected to email/password authentication; the dashboard requires a valid session.
+- Wedding creation, membership persistence, and detail editing are implemented in source. A signed-in member can update names, title, date, venue, story, and map link from the dashboard and open the public wedding link. Partner invitations are not implemented.
+- Treat sample events, checklist counts, and the Dinesh & Usha preview as illustrative. Saved details on the dashboard and other `/w/[slug]` pages come from MongoDB. Live pages show current wedding information, a simple invitation drawn from it, story when provided, venue, and countdown; event, gallery, and livestream sections await their data modules.
 - A local MongoDB replica set now runs on `127.0.0.1:27018` for development. All five current auth and wedding collections/indexes were provisioned there, and real auth and wedding flows were verified against it. Atlas auth persistence was previously verified; creation of the new wedding collections/indexes in Atlas remains unverified after its latest connection failure.
 
 ## Completed and Verified
 
+- Connected active weddings to public `/w/[slug]` pages and `GET /api/v1/public/weddings/:slug`. Public responses contain only display details, and unknown/archived slugs are excluded. The dashboard now opens and copies the couple's real wedding URL. The sample `/` and `/w/dinesh-usha` preview remains separate. Source, typecheck, lint, and formatting validation are recorded below; runtime verification of this new public flow remains pending.
+- Added a member-only wedding detail edit page and `PATCH /api/v1/weddings/:weddingId`. The edit form reuses the setup fields, saves bride/groom display names and the existing text/date/venue/map fields, and links back to the dashboard. Empty optional fields clear saved values. Editing the title leaves the existing slug unchanged. Photo updates remain deferred as requested. After restarting the development server to refresh its cached Mongoose model, a temporary local account verified create, edit, reload, unchanged slug, and clearing optional fields; temporary account and wedding data were removed. Source review, typecheck, lint, and formatting checks passed.
 - Started a project-only, loopback MongoDB replica set using the installed MongoDB Server, with data under Git-ignored `.local/mongodb/data`. Git-ignored `.env.development.local` selects it for development while preserving Atlas settings in `.env.local`. `npm run db:setup` completed for `users`, `auth_sessions`, `auth_rate_limits`, `weddings`, and `wedding_members`.
 - Restarted Next.js with the local development environment. `npm run test:auth:integration` passed registration, login, cookies, session rotation/revocation/expiry, dashboard protection, account status, request validation, and rate limits. `npm run test:wedding:integration` passed wedding create/read, membership, access control, and the one-active-wedding rule. Both scripts removed their own temporary account data; rate counters expire by TTL.
 - The integration checks now confirm the running app reads the same configured database before creating test accounts. The local MongoDB starter checks the running server's data directory before it initializes or accepts the replica set. Both auth and wedding integration checks passed after these safeguards were added.
@@ -28,7 +30,7 @@ This is the living progress tracker for the project. `AGENTS.md` contains persis
 - `npm run typecheck`, `npm test` (2 test files, 13 tests), and `npm run build` passed during authentication implementation. The opt-in local HTTP/Atlas integration check passed registration, duplicate-email handling, multiple password-only users, login, session rotation/revocation/expiry, protected dashboard access, suspended/deleted users, validation and rate limits; temporary accounts and sessions were removed afterward. Production runtime dependency audit reported zero vulnerabilities.
 - The registration page was inspected in the in-app browser at desktop width; its fields and existing visual layout render correctly. This is not a full mobile or browser automation regression suite.
 - `/` and `/w/dinesh-usha` render the same public wedding presentation; `/` stays at the root URL. The shared page component supports both routes, and its Login link opens `/login`. No marketing landing page is present.
-- Stitch-inspired login and registration layouts, the full public wedding presentation at `/w/[slug]`, and a responsive couple dashboard are implemented. Wedding content remains illustrative sample data.
+- Stitch-inspired login and registration layouts, the Dinesh & Usha sample wedding presentation, and a responsive couple dashboard are implemented. The sample presentation remains illustrative; real `/w/[slug]` pages use saved wedding data.
 - The public wedding preview follows the provided Stitch export's section order and sample identity: Dinesh & Usha, Sivan Mahal, Salem. It includes a live countdown and marks gallery upload/livestream setup as unavailable until those workflows exist.
 - The public wedding header brand mark matches the Stitch export: a burgundy rounded-square tile with the intertwined gold-circle wedding emblem and serif wordmark.
 - Login and registration share the same top-right “Back to website” link through `AuthShell`, returning to `/` with the existing hover and keyboard-focus styling. Both links were verified in the browser.
@@ -45,7 +47,7 @@ This is the living progress tracker for the project. `AGENTS.md` contains persis
 
 - REST endpoints exist for health and auth registration/login/logout/current-user lookup.
 - Email/password login and registration are functional. Google sign-in is visibly unavailable; forgot-password, reset-password, and partner-invite remain placeholders. Email verification, profile APIs and Google account linking are not implemented.
-- The dashboard reads saved wedding details from MongoDB, but event/checklist cards and the public wedding website are still not data-backed. Partner invite creation/acceptance and wedding edit/archive APIs are pending.
+- The dashboard reads saved wedding details from MongoDB and links to the edit form and public wedding page. Event/checklist cards and the Dinesh & Usha preview remain sample data. Partner invite creation/acceptance and wedding archive APIs are pending. After schema changes during local development, restart Next.js so Mongoose reloads the updated model.
 - Product screens are English-only at present. Tamil product-page localization remains pending.
 - `src/models/` contains User, AuthSession, AuthRateLimit, Wedding, and WeddingMember schemas. Auth and wedding modules each follow controller/service/repository/validator/DTO layers. General UI primitives remain pending.
 - Unit tests cover HTTP envelopes, auth, and wedding schema boundaries. `scripts/verify-auth.mjs` provides an opt-in local HTTP/Atlas authentication integration check with temporary account cleanup; wedding Atlas integration verification is pending. Automated full-browser coverage is still pending.
@@ -61,9 +63,9 @@ This is the living progress tracker for the project. `AGENTS.md` contains persis
 Follow the implementation order in `DB_API_DESIGN.md` and update this section as work is completed:
 
 1. Finish authentication: configure Google OAuth and Resend, implement safe Google account linking and password recovery, decide/implement email verification, add profile APIs, and complete deployment abuse controls/monitoring. Email/password accounts, sessions and dashboard protection are complete.
-2. Finish the wedding domain: retry Atlas setup, verify create/read against Atlas, add wedding edit/archive and expiring one-time partner invite create/accept, and seed default invitation/checklist data when those modules are added.
+2. Finish the wedding domain: retry Atlas setup, verify create/read/edit against Atlas, add wedding archive and expiring one-time partner invite create/accept, and seed default invitation/checklist data when those modules are added.
 3. Implement event management for Engagement, Nalangu, Muhurtham, and Reception.
-4. Implement invitation configuration/templates, preview and publishing, copy-link/WhatsApp sharing, email invitations, and data-backed public wedding APIs/pages at `/w/[slug]`.
+4. Implement invitation configuration/templates, preview and publishing, WhatsApp sharing, email invitations, and connect their data to the existing public wedding page. The public wedding summary API, core page, and dashboard copy-link action are implemented.
 5. Implement the shopping checklist and catering details.
 6. Implement gallery albums/photos and guest upload through validated Cloudflare R2 upload flows.
 7. Implement external livestream configuration and simple private access.
@@ -80,6 +82,6 @@ Follow the implementation order in `DB_API_DESIGN.md` and update this section as
 
 ## Next Recommended Step
 
-The local development database and current email/password plus wedding-create flows are ready. Next choose the next approved V1 feature: finish Google sign-in/password recovery or continue wedding editing and partner invites. Before using Atlas again, rotate its exposed database-user password, update `.env.local`, confirm Atlas Network Access, and rerun setup there. Atlas wedding provisioning, Resend, and the browser-based desktop/mobile comparison remain pending. Before each implementation step, review relevant design sections and the installed Next.js guides as required by `AGENTS.md`.
+The next planned feature is partner invitations, followed by authentication improvements; ask for confirmation before starting each feature. Before using Atlas again, rotate its exposed database-user password, update `.env.local`, confirm Atlas Network Access, and rerun setup there. Atlas wedding provisioning, Resend, runtime verification of the new public wedding flow, and the browser-based desktop/mobile comparison remain pending. Before each implementation step, review relevant design sections and the installed Next.js guides as required by `AGENTS.md`.
 
 After each feature, verify its implementation in source, record the checks actually run, move completed work out of the pending list, and revise the next step.

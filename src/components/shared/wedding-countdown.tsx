@@ -15,7 +15,13 @@ function getCountdown(targetDate: string): CountdownValues {
   };
 }
 
-export function WeddingCountdown({ targetDate }: { targetDate: string }) {
+export function WeddingCountdown({
+  targetDate,
+  label = "Countdown to the wedding ceremony",
+}: {
+  targetDate: string;
+  label?: string;
+}) {
   const [remaining, setRemaining] = useState<CountdownValues | null>(null);
 
   useEffect(() => {
@@ -28,8 +34,12 @@ export function WeddingCountdown({ targetDate }: { targetDate: string }) {
 
   const units: (keyof CountdownValues)[] = ["days", "hours", "minutes", "seconds"];
 
+  if (remaining && units.every((unit) => remaining[unit] === 0)) {
+    return <p className="countdown-complete">The wedding day has arrived.</p>;
+  }
+
   return (
-    <div className="wedding-countdown" aria-label="Countdown to the wedding ceremony">
+    <div className="wedding-countdown" aria-label={label}>
       {units.map((unit) => (
         <div className="countdown-unit" key={unit}>
           <strong>{remaining ? String(remaining[unit]).padStart(2, "0") : "--"}</strong>

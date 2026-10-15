@@ -4,6 +4,8 @@ export const weddingSchema = new Schema(
   {
     slug: { type: String, required: true, lowercase: true, trim: true, maxlength: 100 },
     title: { type: String, required: true, trim: true, maxlength: 120 },
+    brideName: { type: String, default: null, trim: true, maxlength: 100 },
+    groomName: { type: String, default: null, trim: true, maxlength: 100 },
     story: { type: String, default: null, trim: true, maxlength: 2000 },
     weddingDate: { type: Date, required: true },
     timezone: { type: String, required: true, default: "Asia/Kolkata" },

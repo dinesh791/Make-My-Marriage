@@ -1,5 +1,5 @@
 import type { NextRequest } from "next/server";
-import { getMemberWedding } from "@/modules/wedding/wedding.controller";
+import { getMemberWedding, updateMemberWedding } from "@/modules/wedding/wedding.controller";
 
 export const runtime = "nodejs";
 export async function GET(
@@ -8,4 +8,12 @@ export async function GET(
 ) {
   const { weddingId } = await context.params;
   return getMemberWedding(request, weddingId);
+}
+
+export async function PATCH(
+  request: NextRequest,
+  context: { params: Promise<{ weddingId: string }> },
+) {
+  const { weddingId } = await context.params;
+  return await updateMemberWedding(request, weddingId);
 }

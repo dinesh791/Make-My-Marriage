@@ -163,6 +163,8 @@ Page 2
 |_id|ObjectId|Yes|Primary key|
 |slug|String|Yes|Unique public URL slug|
 |title|String|Yes|Public wedding title|
+|brideName|String|null|No|Bride's public display name; editable independently of account profile|
+|groomName|String|null|No|Groom's public display name; editable independently of account profile|
 |story|String|null|No|Couple story / introduction|
 |weddingDate|Date|Yes|Primary wedding date|
 |timezone|String|Yes|Default Asia/Kolkata|
@@ -761,6 +763,8 @@ This keeps large files away from the main application request path.
 
 
 ## **32. Public Wedding API** 
+
+The public summary returns only active, non-deleted weddings and only display fields: slug, title, bride/groom names, story, wedding date/timezone, and venue name/address/maps link. The Dinesh & Usha sample page is a separate static preview; stored weddings supply the live API and `/w/[slug]` pages.
 
 |**Method**|**Endpoint**|**Purpose**|
 |---|---|---|

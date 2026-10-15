@@ -595,6 +595,30 @@ p {
   box-shadow: 0 5px 20px -4px #2b23250d;
   text-align: left;
 }
+.live-wedding-details {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.live-wedding-site .wedding-hero h1,
+.live-wedding-site .invitation-card h3,
+.live-wedding-site .venue-card h3,
+.live-wedding-site .wedding-footer {
+  overflow-wrap: anywhere;
+}
+.live-story-quote {
+  max-width: 780px;
+  margin: 0 auto;
+}
+.live-story-quote p,
+.live-wedding-details strong {
+  overflow-wrap: anywhere;
+}
+.live-story-quote p {
+  white-space: pre-line;
+}
+.live-venue-card {
+  max-width: 660px;
+  margin: 0 auto;
+}
 .wedding-detail {
   display: flex;
   min-height: 50px;
@@ -1711,8 +1735,10 @@ p {
   display: grid;
   gap: 0.5rem;
 }
-.action-list a {
+.action-list a,
+.action-list button {
   display: flex;
+  width: 100%;
   align-items: center;
   justify-content: space-between;
   gap: 0.8rem;
@@ -1721,8 +1747,19 @@ p {
   padding: 0.7rem;
   color: #594b45;
   font-size: 0.76rem;
+  text-align: left;
 }
-.action-list a:hover {
+.action-list button {
+  background: white;
+  cursor: pointer;
+}
+.action-list button small {
+  display: block;
+  margin-top: 0.2rem;
+  color: var(--muted);
+}
+.action-list a:hover,
+.action-list button:hover {
   border-color: #d3b4ad;
   background: #fffcfa;
 }

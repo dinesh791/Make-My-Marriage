@@ -4,6 +4,7 @@ import { Brand } from "@/components/shared/brand";
 import { SignOutButton } from "@/components/shared/sign-out-button";
 import { requireUser } from "@/lib/auth/current-user";
 import { WeddingSetupForm } from "@/components/shared/wedding-setup-form";
+import { CopyWeddingLinkButton } from "@/components/shared/copy-wedding-link-button";
 import { getMyWedding } from "@/modules/wedding/wedding.service";
 import { toWeddingDto } from "@/modules/wedding/wedding.dto";
 
@@ -105,8 +106,13 @@ export default async function DashboardPage() {
                 step.
               </p>
             </div>
-            <Link className="button button-outline" href="/w/dinesh-usha">
-              View sample website ↗
+            <Link
+              className="button button-outline"
+              href={`/w/${wedding.slug}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              View your website ↗
             </Link>
           </div>
 
@@ -114,6 +120,9 @@ export default async function DashboardPage() {
             <div className="dashboard-hero-copy">
               <span className="eyebrow">Your wedding · {wedding.slug}</span>
               <h2 className="serif">{wedding.title}</h2>
+              {(wedding.brideName || wedding.groomName) && (
+                <p>{[wedding.brideName, wedding.groomName].filter(Boolean).join(" & ")}</p>
+              )}
               <p>
                 {new Intl.DateTimeFormat("en-IN", {
                   dateStyle: "full",
@@ -170,18 +179,21 @@ export default async function DashboardPage() {
                 <h2>Quick actions</h2>
               </div>
               <div className="action-list">
-                <span className="action-disabled" id="website">
-                  Wedding website <small>Coming soon</small>
-                </span>
-                <span className="action-disabled">
-                  Edit wedding details <small>Coming soon</small>
-                </span>
+                <Link
+                  id="website"
+                  href={`/w/${wedding.slug}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Wedding website <span aria-hidden="true">↗</span>
+                </Link>
+                <Link href="/dashboard/wedding/edit">
+                  Edit wedding details <span aria-hidden="true">→</span>
+                </Link>
                 <span className="action-disabled">
                   Preview invitation <small>Coming soon</small>
                 </span>
-                <span className="action-disabled">
-                  Share wedding link <small>Coming soon</small>
-                </span>
+                <CopyWeddingLinkButton slug={wedding.slug} />
               </div>
               <p className="progress-note">
                 Your wedding has been saved. Partner invitations are the next step.

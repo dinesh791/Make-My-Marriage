@@ -10,7 +10,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 # Make My Marriage — Project Context
 
-Last reviewed: 2026-10-14
+Last reviewed: 2026-10-15
 
 Use this file for project context and implementation guidance. The confirmed V1 baseline is in `docs/PRD.md`, `docs/SYSTEM_DESIGN.md`, and `docs/DB_API_DESIGN.md`. Read this file and the relevant parts of those documents before implementing a feature. Verify progress against source code; a route, helper, or marketing description does not mean the user-facing feature is complete. Current progress, verification, and next steps are tracked separately in `docs/PROJECT_STATUS.md`.
 
@@ -39,10 +39,11 @@ public/images/wedding/             Reusable Stitch-derived wedding image
 src/
   app/
     (auth)/                         Connected email/password forms; recovery and partner-invite placeholders
-    (dashboard)/dashboard/          Protected dashboard with wedding setup and saved wedding details
-    (public)/w/[slug]/              Stitch-inspired public wedding preview (sample data)
+    (dashboard)/dashboard/          Protected dashboard with wedding setup, saved details, and editing
+    (public)/w/[slug]/              Live wedding pages plus the Stitch sample preview
     api/v1/auth/                    Registration, login, logout, and current-user endpoints
-    api/v1/weddings/                Create/list weddings and get member details
+    api/v1/weddings/                Create/list weddings and get/update member details
+    api/v1/public/weddings/         Public read endpoint for active wedding summaries
     api/v1/health/                  Implemented health endpoint
     page.tsx                         Renders the sample wedding at `/`
     globals.css                      Shared product surfaces and responsive styling

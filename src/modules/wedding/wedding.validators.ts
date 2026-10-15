@@ -11,8 +11,12 @@ const httpUrl = z
     }
   }, "Enter an HTTP or HTTPS link.");
 
+const displayName = z.string().trim().max(100);
+
 export const createWeddingSchema = z.object({
   title: z.string().trim().min(3).max(120),
+  brideName: displayName.optional(),
+  groomName: displayName.optional(),
   role: z.enum(["BRIDE", "GROOM"]),
   story: z.string().trim().max(2000).optional().or(z.literal("")),
   weddingDate: z.iso.datetime({ offset: true }),
@@ -22,3 +26,11 @@ export const createWeddingSchema = z.object({
 });
 
 export type CreateWeddingInput = z.infer<typeof createWeddingSchema>;
+
+export const updateWeddingSchema = createWeddingSchema
+  .omit({ role: true })
+  .partial()
+  .strict()
+  .refine((input) => Object.keys(input).length > 0, "Provide at least one wedding detail.");
+
+export type UpdateWeddingInput = z.infer<typeof updateWeddingSchema>;

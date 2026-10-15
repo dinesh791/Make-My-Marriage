@@ -5,9 +5,9 @@ import { errorResponse, successResponse } from "@/lib/http/api-response";
 import { AppError } from "@/lib/http/errors";
 import { readAuthJson, requireSameOrigin } from "@/lib/http/auth-request";
 import { getCurrentUser } from "@/modules/auth/auth.service";
-import { toWeddingDto } from "./wedding.dto";
+import { toPublicWeddingDto, toWeddingDto } from "./wedding.dto";
 import * as service from "./wedding.service";
-import { createWeddingSchema } from "./wedding.validators";
+import { createWeddingSchema, updateWeddingSchema } from "./wedding.validators";
 
 function privateResponse(response: Response) {
   response.headers.set("Cache-Control", "no-store, private");
@@ -63,5 +63,27 @@ export async function getMemberWedding(request: NextRequest, weddingId: string) 
     return privateResponse(successResponse({ wedding: toWeddingDto(wedding) }));
   } catch (error) {
     return privateResponse(failure(error));
+  }
+}
+
+export async function updateMemberWedding(request: NextRequest, weddingId: string) {
+  try {
+    requireSameOrigin(request);
+    const user = await signedInUser(request);
+    const input = await readAuthJson(request, updateWeddingSchema);
+    const wedding = await service.updateWedding(weddingId, user.id, input);
+    return privateResponse(successResponse({ wedding: toWeddingDto(wedding) }, "Wedding updated."));
+  } catch (error) {
+    return privateResponse(failure(error));
+  }
+}
+
+export async function getPublicWedding(slug: string) {
+  try {
+    const wedding = await service.getPublicWeddingBySlug(slug);
+    if (!wedding) throw new AppError("WEDDING_NOT_FOUND", "Wedding not found.", 404);
+    return successResponse(toPublicWeddingDto(wedding));
+  } catch (error) {
+    return failure(error);
   }
 }

@@ -2,7 +2,7 @@ import "server-only";
 import { Types } from "mongoose";
 import { connectToDatabase } from "@/lib/db/mongoose";
 import { AppError } from "@/lib/http/errors";
-import type { CreateWeddingInput } from "./wedding.validators";
+import type { CreateWeddingInput, UpdateWeddingInput } from "./wedding.validators";
 import * as repository from "./wedding.repository";
 
 function slugBase(title: string) {
@@ -37,6 +37,29 @@ export async function getWeddingForMember(weddingId: string, userId: string) {
   return wedding;
 }
 
+export async function getPublicWeddingBySlug(slug: string) {
+  if (!/^[a-z0-9-]{1,100}$/.test(slug)) return null;
+  await connectToDatabase();
+  await repository.ensureWeddingStorage();
+  return repository.findPublicWeddingBySlug(slug);
+}
+
+export async function updateWedding(weddingId: string, userId: string, input: UpdateWeddingInput) {
+  await getWeddingForMember(weddingId, userId);
+  const details: Parameters<typeof repository.updateWeddingDetails>[1] = {};
+  if (input.title !== undefined) details.title = input.title;
+  if (input.brideName !== undefined) details.brideName = input.brideName || null;
+  if (input.groomName !== undefined) details.groomName = input.groomName || null;
+  if (input.story !== undefined) details.story = input.story || null;
+  if (input.weddingDate !== undefined) details.weddingDate = new Date(input.weddingDate);
+  if (input.venueName !== undefined) details.venueName = input.venueName;
+  if (input.venueAddress !== undefined) details.venueAddress = input.venueAddress;
+  if (input.mapsUrl !== undefined) details.mapsUrl = input.mapsUrl || null;
+  const wedding = await repository.updateWeddingDetails(weddingId, details);
+  if (!wedding) throw new AppError("WEDDING_NOT_FOUND", "Wedding not found.", 404);
+  return wedding;
+}
+
 export async function createWedding(userId: string, input: CreateWeddingInput) {
   await connectToDatabase();
   await repository.ensureWeddingStorage();
@@ -54,6 +77,8 @@ export async function createWedding(userId: string, input: CreateWeddingInput) {
       return await repository.createWeddingWithMember(userId, {
         slug,
         title: input.title,
+        brideName: input.brideName || null,
+        groomName: input.groomName || null,
         role: input.role,
         story: input.story || null,
         weddingDate: new Date(input.weddingDate),

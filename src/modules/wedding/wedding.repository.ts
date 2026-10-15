@@ -57,11 +57,37 @@ export async function findMemberWedding(weddingId: string, userId: string) {
   return WeddingModel.findOne({ _id: weddingId, status: "ACTIVE", deletedAt: null });
 }
 
+export async function findPublicWeddingBySlug(slug: string) {
+  return WeddingModel.findOne({ slug, status: "ACTIVE", deletedAt: null });
+}
+
+export async function updateWeddingDetails(
+  weddingId: string,
+  details: Partial<{
+    title: string;
+    brideName: string | null;
+    groomName: string | null;
+    story: string | null;
+    weddingDate: Date;
+    venueName: string;
+    venueAddress: string;
+    mapsUrl: string | null;
+  }>,
+) {
+  return WeddingModel.findOneAndUpdate(
+    { _id: weddingId, status: "ACTIVE", deletedAt: null },
+    { $set: details },
+    { new: true, runValidators: true },
+  );
+}
+
 export async function createWeddingWithMember(
   userId: string,
   input: {
     slug: string;
     title: string;
+    brideName: string | null;
+    groomName: string | null;
     role: "BRIDE" | "GROOM";
     story: string | null;
     weddingDate: Date;
@@ -79,6 +105,8 @@ export async function createWeddingWithMember(
           {
             slug: input.slug,
             title: input.title,
+            brideName: input.brideName,
+            groomName: input.groomName,
             story: input.story,
             weddingDate: input.weddingDate,
             timezone: "Asia/Kolkata",
