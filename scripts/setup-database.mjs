@@ -5,6 +5,8 @@ import { AuthSessionModel } from "../src/models/auth-session.ts";
 import { AuthRateLimitModel } from "../src/models/auth-rate-limit.ts";
 import { WeddingModel } from "../src/models/wedding.ts";
 import { WeddingMemberModel } from "../src/models/wedding-member.ts";
+import { WeddingPartnerInviteModel } from "../src/models/wedding-partner-invite.ts";
+import { GuestInvitationModel } from "../src/models/guest-invitation.ts";
 
 nextEnv.loadEnvConfig(process.cwd(), process.env.NODE_ENV !== "production", {
   info() {},
@@ -35,6 +37,8 @@ try {
     AuthRateLimitModel,
     WeddingModel,
     WeddingMemberModel,
+    WeddingPartnerInviteModel,
+    GuestInvitationModel,
   ]) {
     phase = `creating the ${model.collection.collectionName} collection`;
     await model.createCollection();

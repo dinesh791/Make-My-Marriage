@@ -36,7 +36,7 @@ Media flow: Browser → upload flow → Cloudflare R2, with photo metadata in Mo
 
 **Presentation:** Next.js pages, React components, dashboard, public wedding pages, invitation preview. 
 
-**Primary application surfaces:** account access (`/login`, `/register`), couple dashboard (`/dashboard`), and public wedding website (`/w/[slug]`). There is no marketing landing page in the V1 app; for the current sample-data preview, `/` directly renders the Dinesh & Usha wedding website without changing the URL. The sample is also available at `/w/dinesh-usha`. The public wedding site links to `/login`, which links to `/register`; keep wedding viewing account-free for guests. Define production root/host routing after real wedding slugs are available.
+**Primary application surfaces:** account access (`/login`, `/register`), couple dashboard (`/dashboard`), guest RSVP (`/invitation/[token]`), and wedding website (`/w/[slug]`). There is no marketing landing page in V1; `/` and `/w/dinesh-usha` remain ungated sample previews. Real weddings show a basic public page and require an attending guest invitation or bride/groom membership for detailed invitation content. Guests do not create accounts.
 
 **API:** Versioned REST endpoints under **/api/v1** , handling HTTP requests, validation, authentication, authorization, and response formatting. 
 
@@ -114,13 +114,13 @@ Partner joining is separate from normal wedding invitations sent to relatives an
 
 ## **10. Public Wedding Website** 
 
-Each wedding receives a unique public slug such as **/w/dinesh-usha** . Public sections can include Home, Story, Events, Venue, Invitation, Gallery, and Live. Anyone with the link can view it without logging in.
+Each wedding receives a unique slug such as **/w/dinesh-usha** . Anyone with the link can view basic couple/date/venue-name information. Full invitation, story, street address, map link, and detailed venue content require bride/groom membership or an attending guest invitation. Guest access is checked on the server for pages and REST responses; hiding a UI section alone does not protect it. The sample wedding remains a public preview.
 
 ## **11. Invitation & Email** 
 
 Predefined invitation templates use the central wedding/event data. Sharing supports WhatsApp, copy link, and email. 
 
-**Email flow:** Bride/Groom enters recipient email → REST API validates request → invitation service sends through Resend → recipient receives invitation email containing the public wedding link. Recipients do not need an account. 
+**Email flow:** Bride/Groom enters recipient email → REST API validates and rate limits request → invitation service stores a token hash and sends a short email through Resend with the wedding title, invitation message, attendance prompt, and response button → the linked RSVP page shows the couple, date, and venue name and lets the recipient answer Attending or Can't attend → an Attending answer sets an HTTP-only guest access cookie for the full wedding invitation and detailed venue information. Recipients do not need an account. The personal link acts as a bearer secret and should not be forwarded; strict mailbox verification is a future privacy enhancement.
 
 ## **12. MongoDB Atlas** 
 
@@ -140,7 +140,7 @@ Uploads should use file type/size validation, rate limiting, and appropriate acc
 
 ## **14. Guest Photo Upload** 
 
-Guests can upload photos from the public wedding link without accounts. V1 should include file validation, size limits, rate limiting, and bride/groom delete controls. 
+Attending invited guests can upload photos without accounts after guest access is checked. V1 should include file validation, size limits, rate limiting, and bride/groom delete controls.
 
 ## **15. Livestream** 
 
@@ -170,7 +170,7 @@ Secrets and environment variables remain server-side and are never exposed to th
 
 **Photo upload:** Browser → controlled upload flow → Cloudflare R2 → photo metadata in MongoDB. 
 
-**Email invitation:** Bride/Groom → REST API → invitation service → Resend → recipient → public wedding link. 
+**Email invitation:** Bride/Groom → REST API → invitation service → Resend → recipient → attendance response → access-controlled wedding details.
 
 ## **20. Architecture Principles** 
 

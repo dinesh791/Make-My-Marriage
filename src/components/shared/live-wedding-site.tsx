@@ -3,7 +3,13 @@ import { Brand } from "@/components/shared/brand";
 import type { PublicWeddingDto } from "@/modules/wedding/wedding.dto";
 import { WeddingCountdown } from "./wedding-countdown";
 
-export function LiveWeddingSite({ wedding }: { wedding: PublicWeddingDto }) {
+export function LiveWeddingSite({
+  wedding,
+  unlocked,
+}: {
+  wedding: PublicWeddingDto;
+  unlocked: boolean;
+}) {
   const homeHref = `/w/${wedding.slug}`;
   const coupleNames =
     wedding.brideName && wedding.groomName
@@ -21,9 +27,9 @@ export function LiveWeddingSite({ wedding }: { wedding: PublicWeddingDto }) {
           <Brand className="wedding-brand" href={homeHref} />
           <nav className="wedding-links" aria-label="Wedding website">
             <a href="#home">Home</a>
-            {wedding.story && <a href="#our-story">Our Story</a>}
+            {unlocked && wedding.story && <a href="#our-story">Our Story</a>}
             <a href="#digital-invitation">Invitation</a>
-            <a href="#venue">Venue</a>
+            {unlocked && <a href="#venue">Venue</a>}
           </nav>
           <Link className="wedding-login" href="/login">
             Login
@@ -83,16 +89,18 @@ export function LiveWeddingSite({ wedding }: { wedding: PublicWeddingDto }) {
           </p>
           <div className="wedding-actions">
             <a className="wedding-button" href="#digital-invitation">
-              View invitation
+              {unlocked ? "View invitation" : "How to view the invitation"}
             </a>
-            <a className="wedding-button wedding-button-outline" href="#venue">
-              Venue details
-            </a>
+            {unlocked && (
+              <a className="wedding-button wedding-button-outline" href="#venue">
+                Venue details
+              </a>
+            )}
           </div>
         </div>
       </section>
 
-      {wedding.story && (
+      {unlocked && wedding.story && (
         <section className="wedding-section wedding-story" id="our-story">
           <div className="wedding-content">
             <div className="wedding-section-heading">
@@ -118,63 +126,75 @@ export function LiveWeddingSite({ wedding }: { wedding: PublicWeddingDto }) {
             <span className="wedding-eyebrow">✦ You are invited ✦</span>
             <h2 className="wedding-serif">A Wedding Invitation</h2>
           </div>
-          <article className="invitation-card">
-            <span className="invitation-emblem" aria-hidden="true">
-              ம
-            </span>
-            <span className="wedding-eyebrow">Together with our families</span>
-            <p className="invitation-message">
-              We warmly invite you to join us and share your blessings on our wedding day.
-            </p>
-            <h3 className="wedding-serif">{coupleNames}</h3>
-            <div className="invitation-divider" aria-hidden="true">
-              <span>✦</span>
-            </div>
-            <p className="invitation-date">{date}</p>
-            <p className="invitation-venue">
-              {wedding.venue.name} · {wedding.venue.address}
-            </p>
-            {wedding.venue.mapsUrl && (
-              <a
-                className="wedding-text-link"
-                href={wedding.venue.mapsUrl}
-                target="_blank"
-                rel="noreferrer"
-              >
-                View venue directions <span aria-hidden="true">↗</span>
-              </a>
-            )}
-          </article>
+          {unlocked ? (
+            <article className="invitation-card">
+              <span className="invitation-emblem" aria-hidden="true">
+                ம
+              </span>
+              <span className="wedding-eyebrow">Together with our families</span>
+              <p className="invitation-message">
+                We warmly invite you to join us and share your blessings on our wedding day.
+              </p>
+              <h3 className="wedding-serif">{coupleNames}</h3>
+              <div className="invitation-divider" aria-hidden="true">
+                <span>✦</span>
+              </div>
+              <p className="invitation-date">{date}</p>
+              <p className="invitation-venue">
+                {wedding.venue.name} · {wedding.venue.address}
+              </p>
+              {wedding.venue.mapsUrl && (
+                <a
+                  className="wedding-text-link"
+                  href={wedding.venue.mapsUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  View venue directions <span aria-hidden="true">↗</span>
+                </a>
+              )}
+            </article>
+          ) : (
+            <article className="invitation-card">
+              <h3 className="wedding-serif">Invitation details</h3>
+              <p className="invitation-message">
+                Please open the personal link sent to your email and confirm that you&apos;ll
+                attend. The full invitation will appear here afterward.
+              </p>
+            </article>
+          )}
         </div>
       </section>
 
-      <section className="wedding-section" id="venue">
-        <div className="wedding-content">
-          <div className="wedding-section-heading">
-            <span className="wedding-eyebrow">✦ Join us ✦</span>
-            <h2 className="wedding-serif">Wedding Venue</h2>
-          </div>
-          <div className="venue-card live-venue-card">
-            <span className="wedding-eyebrow">Where we celebrate</span>
-            <h3 className="wedding-serif">{wedding.venue.name}</h3>
-            <p className="venue-address">{wedding.venue.address}</p>
-            <div className="venue-facts">
-              <span>Wedding day</span>
-              <span>{date}</span>
+      {unlocked && (
+        <section className="wedding-section" id="venue">
+          <div className="wedding-content">
+            <div className="wedding-section-heading">
+              <span className="wedding-eyebrow">✦ Join us ✦</span>
+              <h2 className="wedding-serif">Wedding Venue</h2>
             </div>
-            {wedding.venue.mapsUrl && (
-              <a
-                className="wedding-button"
-                href={wedding.venue.mapsUrl}
-                target="_blank"
-                rel="noreferrer"
-              >
-                Open in Google Maps <span aria-hidden="true">↗</span>
-              </a>
-            )}
+            <div className="venue-card live-venue-card">
+              <span className="wedding-eyebrow">Where we celebrate</span>
+              <h3 className="wedding-serif">{wedding.venue.name}</h3>
+              <p className="venue-address">{wedding.venue.address}</p>
+              <div className="venue-facts">
+                <span>Wedding day</span>
+                <span>{date}</span>
+              </div>
+              {wedding.venue.mapsUrl && (
+                <a
+                  className="wedding-button"
+                  href={wedding.venue.mapsUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Open in Google Maps <span aria-hidden="true">↗</span>
+                </a>
+              )}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       <section className="wedding-countdown-section" aria-labelledby="countdown-title">
         <div className="wedding-content">
@@ -198,9 +218,9 @@ export function LiveWeddingSite({ wedding }: { wedding: PublicWeddingDto }) {
           <div className="footer-quick-links">
             <strong>Quick navigation</strong>
             <a href="#home">Home</a>
-            {wedding.story && <a href="#our-story">Our story</a>}
+            {unlocked && wedding.story && <a href="#our-story">Our story</a>}
             <a href="#digital-invitation">Invitation</a>
-            <a href="#venue">Venue</a>
+            {unlocked && <a href="#venue">Venue</a>}
           </div>
           <div className="footer-account">
             <strong>Make My Marriage</strong>
@@ -210,7 +230,7 @@ export function LiveWeddingSite({ wedding }: { wedding: PublicWeddingDto }) {
         </div>
         <div className="wedding-footer-bottom">
           <span>{coupleNames}</span>
-          <span>{wedding.venue.address}</span>
+          <span>{unlocked ? wedding.venue.address : wedding.venue.name}</span>
         </div>
       </footer>
     </main>

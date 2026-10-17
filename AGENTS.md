@@ -10,7 +10,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 # Make My Marriage — Project Context
 
-Last reviewed: 2026-10-15
+Last reviewed: 2026-10-17
 
 Use this file for project context and implementation guidance. The confirmed V1 baseline is in `docs/PRD.md`, `docs/SYSTEM_DESIGN.md`, and `docs/DB_API_DESIGN.md`. Read this file and the relevant parts of those documents before implementing a feature. Verify progress against source code; a route, helper, or marketing description does not mean the user-facing feature is complete. Current progress, verification, and next steps are tracked separately in `docs/PROJECT_STATUS.md`.
 
@@ -18,7 +18,7 @@ After completing a feature, update `docs/PROJECT_STATUS.md` with what changed, w
 
 ## Product Overview
 
-Make My Marriage is a web application for Tamil-style weddings, initially targeting Tamil Nadu. The V1 goal is to let a bride and groom create and share one wedding link for their wedding information, events, invitation, public website, shopping checklist, catering details, photo gallery, and external livestream. Guests can use public wedding links without accounts. The product UI is intended to support Tamil and English.
+Make My Marriage is a web application for Tamil-style weddings, initially targeting Tamil Nadu. The V1 goal is to let a bride and groom create and share wedding information, events, invitation, website, shopping checklist, catering details, photo gallery, and external livestream. Guests do not need accounts: a basic wedding page is public, while personal email invitations collect attendance responses and unlock details for attending guests. The product UI is intended to support Tamil and English.
 
 The V1 product experience consists of login/sign-up, the couple dashboard, and public wedding websites. A separate marketing landing page is out of scope; during the current sample-data preview, `/` renders the Dinesh & Usha wedding website directly. Its Login link opens `/login`, which links to `/register`. The same sample remains available at `/w/dinesh-usha` as a public wedding URL. See `docs/PROJECT_STATUS.md` for which surfaces are presentation-only versus connected to real authentication and wedding data.
 
@@ -38,11 +38,13 @@ docs/                              Confirmed designs and living project status
 public/images/wedding/             Reusable Stitch-derived wedding image
 src/
   app/
-    (auth)/                         Connected email/password forms; recovery and partner-invite placeholders
+    (auth)/                         Connected email/password forms and partner-invite acceptance; recovery placeholders
     (dashboard)/dashboard/          Protected dashboard with wedding setup, saved details, and editing
     (public)/w/[slug]/              Live wedding pages plus the Stitch sample preview
     api/v1/auth/                    Registration, login, logout, and current-user endpoints
-    api/v1/weddings/                Create/list weddings and get/update member details
+    api/v1/weddings/                Create/list weddings, member details, and partner invite creation
+    api/v1/wedding-partner-invites/ Partner invite acceptance
+    api/v1/guest-invitations/     Guest RSVP response
     api/v1/public/weddings/         Public read endpoint for active wedding summaries
     api/v1/health/                  Implemented health endpoint
     page.tsx                         Renders the sample wedding at `/`
@@ -58,9 +60,11 @@ src/
     http/                             API response envelopes and AppError
     i18n/                             Locale types; product-page localization remains pending
     r2/                               Cloudflare R2 S3 client helper
-  models/                             Auth plus wedding and membership schemas
+  models/                             Auth, wedding, membership, and partner-invite schemas
   modules/auth/                       Auth controller, service, repository, validators, and DTO
   modules/wedding/                    Wedding controller, service, repository, validators, and DTO
+  modules/partner-invite/             One-time invite controller, service, and repository
+  modules/guest-invitation/           Email delivery, RSVP, and detail-access rules
   types/                              Shared-type guidance only; no shared application types
 tests/
   unit/http/api-response.test.ts      Tests for success/error response envelopes
@@ -73,7 +77,8 @@ scripts/                             Local MongoDB startup, DB provisioning, aut
 ## Important Technical Decisions
 
 - Treat the three documents in `docs/` as the confirmed V1 scope and architecture baseline.
-- Wedding is the central domain object. Bride and groom roles are represented through wedding membership; guests do not get accounts or a guest-manager feature in V1.
+- Wedding is the central domain object. Bride and groom roles are represented through wedding membership. Guests do not get accounts; V1 stores invited email recipients and attendance responses without a broader guest-manager feature.
+- The Dinesh & Usha sample remains public. Real wedding slugs show a basic public page; full invitation, story, and venue details require an attending guest invitation or active bride/groom membership. Enforce this in public API responses as well as pages.
 - Keep a modular monolith; do not introduce microservices without a demonstrated need.
 - Keep API responses in the documented success/error envelope. Validate request data at API boundaries and centralize wedding-membership authorization.
 - Store media objects in R2 and their metadata/object keys in MongoDB. Never store R2 credentials in the database.

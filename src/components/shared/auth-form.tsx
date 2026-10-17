@@ -3,7 +3,7 @@
 import { useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 
-export function AuthForm({ mode }: { mode: "login" | "register" }) {
+export function AuthForm({ mode, next }: { mode: "login" | "register"; next?: string | null }) {
   const router = useRouter();
   const submitting = useRef(false);
   const [pending, setPending] = useState(false);
@@ -40,7 +40,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
         setError(result.error?.message ?? "Unable to continue. Please try again.");
         return;
       }
-      router.replace("/dashboard");
+      router.replace(next ?? "/dashboard");
       router.refresh();
     } catch {
       setError("We couldn't reach the server. Check your connection and try again.");

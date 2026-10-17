@@ -39,3 +39,15 @@ export function toPublicWeddingDto(wedding: WeddingRecord) {
 }
 
 export type PublicWeddingDto = ReturnType<typeof toPublicWeddingDto>;
+
+export function toWeddingTeaserDto(wedding: WeddingRecord) {
+  return {
+    slug: wedding.slug,
+    title: wedding.title,
+    brideName: wedding.brideName ?? null,
+    groomName: wedding.groomName ?? null,
+    weddingDate: wedding.weddingDate.toISOString(),
+    timezone: wedding.timezone,
+    venueName: wedding.venueName,
+  };
+}

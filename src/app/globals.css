@@ -113,6 +113,89 @@ p {
 }
 
 /* Authentication */
+.guest-invitation-page {
+  min-height: 100vh;
+  padding: clamp(1rem, 5vw, 4rem);
+  background: var(--sand);
+}
+.guest-invitation-page .setup-card {
+  max-width: 640px;
+}
+.guest-rsvp-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 1.5rem 0;
+}
+.guest-invitation-card {
+  margin-top: 1.5rem;
+}
+.guest-email-preview {
+  margin: 1.25rem 0;
+  padding: 1.25rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper);
+}
+.guest-email-preview h3 {
+  margin: 0.5rem 0;
+}
+.guest-email-preview .button {
+  pointer-events: none;
+}
+.guest-invitation-form {
+  display: grid;
+  gap: 0.65rem;
+  margin-top: 1.25rem;
+}
+.guest-invitation-form .field {
+  height: auto;
+  min-height: 95px;
+  padding: 0.8rem;
+}
+.guest-invitation-form .button {
+  justify-self: start;
+}
+.guest-invitation-history {
+  margin-top: 1.5rem;
+}
+.guest-invitation-history ul {
+  list-style: none;
+  padding: 0;
+}
+.guest-invitation-history li {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.7rem 0;
+  border-bottom: 1px solid var(--line);
+  overflow-wrap: anywhere;
+}
+.partner-invite-page {
+  min-height: 100vh;
+  padding: clamp(1rem, 5vw, 4rem);
+  background: var(--sand);
+}
+.partner-invite-page .setup-card {
+  max-width: 620px;
+}
+.partner-invite-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 1.5rem 0;
+}
+.partner-invite-card {
+  margin-top: 1.5rem;
+}
+.partner-invite-link {
+  display: grid;
+  gap: 0.65rem;
+  margin-top: 1rem;
+}
+.partner-invite-link .button {
+  justify-self: start;
+}
 .auth-layout {
   display: grid;
   min-height: 100vh;

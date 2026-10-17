@@ -1,6 +1,8 @@
 # **Make My Marriage** 
 
-Confirmed Product Requirements Document (PRD) — Version 1.0 
+Confirmed Product Requirements Document (PRD) — Version 1.1
+
+V1 guest invitation amendment (2026-10-17): the couple sends personal email invitations. Recipients respond Attending or Can't attend without creating accounts. A basic wedding page remains public; the full invitation and detailed venue/story sections unlock only after an Attending response. Guest email/response records are therefore part of V1, while a broad Guest Manager remains out of scope. The Dinesh & Usha sample remains an ungated preview.
 
 ## **1. Product Overview** 
 
@@ -14,7 +16,7 @@ Confirmed Product Requirements Document (PRD) — Version 1.0
 
 **Bride** and **Groom** are the only wedding administrators. Both can manage the wedding. 
 
-**Guests:** Guests do not need an account. They access the wedding through a shared link and can view the website, invitation, events, photos, and livestream when available. There is no Guest Manager or guest database in V1. 
+**Guests:** Guests do not need an account. An emailed personal link lets a relative respond to the invitation. A basic wedding page is public; attending relatives can view full invitation details. Store only the recipient address and delivery/attendance response needed for this flow. There is no broader Guest Manager in V1.
 
 ## **3. Authentication** 
 
@@ -76,7 +78,7 @@ The couple selects from predefined invitation templates such as Traditional Tami
 
 Every wedding automatically receives a public website, for example: **makemymarriage.com/w/dinesh-usha** .
 
-Sections: Home, Our Story, Events, Venue, Invitation, Gallery, and Live. Anyone with the wedding link can view the website. No login is required for normal viewing. 
+Sections: Home, Our Story, Events, Venue, Invitation, Gallery, and Live. Anyone with the wedding link can view a basic wedding page. Full invitation and detailed sections require an attending response from an emailed invite. Guests do not create accounts.
 
 ## **9. Wedding Shopping** 
 
@@ -88,7 +90,7 @@ Basic catering information only: caterer name, contact information, food type, m
 
 ## **11. Photo Gallery** 
 
-The couple can create albums such as Engagement, Nalangu, Muhurtham, Reception, Family, and Friends. Anyone with the wedding link can upload photos. The bride/groom can manage or remove uploaded photos. 
+The couple can create albums such as Engagement, Nalangu, Muhurtham, Reception, Family, and Friends. Attending invited guests can upload photos after obtaining wedding detail access. The bride/groom can manage or remove uploaded photos.
 
 ## **12. Wedding Livestream** 
 
@@ -102,7 +104,7 @@ Quick actions: Edit Wedding, Preview Website, Preview Invitation, and Share Wedd
 
 ## **14. Guest Flow** 
 
-Guest receives WhatsApp/link → opens wedding website → views invitation and events → views/uploads gallery photos → watches livestream when available. Guests do not need to register. 
+Guest receives a short personal email containing the wedding title, a warm invitation message, an attendance prompt, and a response button. The linked RSVP page shows the couple, date, and venue name before the guest responds Attending or Can't attend. An attending guest can view the full invitation, street address, map link, and detailed wedding page. Guests do not need to register. A forwarded personal link can grant access; strict recipient-only verification may be added later if required. WhatsApp/copy-link sharing leads to the basic public page.
 
 ## **15. V1 Scope** 
 
@@ -111,6 +113,7 @@ Guest receives WhatsApp/link → opens wedding website → views invitation and 
 |Authentication|Guest Manager|
 |Bride/Groom accounts|Guest count|
 |Partner joining|Budget Manager|
+|Guest email invitations and attendance responses|Guest count dashboard|
 |Wedding creation|Online payments|
 |Couple profile|Vendor marketplace|
 |Wedding information|Vendor booking|

@@ -7,6 +7,13 @@ import { WeddingSetupForm } from "@/components/shared/wedding-setup-form";
 import { CopyWeddingLinkButton } from "@/components/shared/copy-wedding-link-button";
 import { getMyWedding } from "@/modules/wedding/wedding.service";
 import { toWeddingDto } from "@/modules/wedding/wedding.dto";
+import { getPartnerStatus } from "@/modules/partner-invite/partner-invite.service";
+import { PartnerInvitePanel } from "@/components/shared/partner-invite-panel";
+import { GuestInvitationPanel } from "@/components/shared/guest-invitation-panel";
+import {
+  emailDeliveryConfigured,
+  listGuestInvitations,
+} from "@/modules/guest-invitation/guest-invitation.service";
 
 const workspaceLinks = [
   ["Overview", "O", "#overview"],
@@ -50,6 +57,8 @@ export default async function DashboardPage() {
     );
   }
   const wedding = toWeddingDto(savedWedding);
+  const partnerStatus = await getPartnerStatus(wedding.id, user.id);
+  const guestInvitations = await listGuestInvitations(wedding.id, user.id);
   const today = new Intl.DateTimeFormat("en-IN", {
     dateStyle: "full",
     timeZone: "Asia/Kolkata",
@@ -101,10 +110,7 @@ export default async function DashboardPage() {
             <div>
               <span className="eyebrow">Vanakkam, {user.firstName}</span>
               <h1>Your wedding, at a glance</h1>
-              <p>
-                Your wedding details are saved. Partner invitations and planning tools are the next
-                step.
-              </p>
+              <p>Your wedding details are saved. Invite your partner to plan together.</p>
             </div>
             <Link
               className="button button-outline"
@@ -195,11 +201,17 @@ export default async function DashboardPage() {
                 </span>
                 <CopyWeddingLinkButton slug={wedding.slug} />
               </div>
-              <p className="progress-note">
-                Your wedding has been saved. Partner invitations are the next step.
-              </p>
             </section>
           </div>
+          <PartnerInvitePanel weddingId={wedding.id} {...partnerStatus} />
+          <GuestInvitationPanel
+            weddingId={wedding.id}
+            configured={emailDeliveryConfigured()}
+            initialInvitations={guestInvitations}
+            preview={{
+              title: wedding.title,
+            }}
+          />
         </section>
       </div>
     </main>

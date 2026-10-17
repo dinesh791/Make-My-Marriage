@@ -26,7 +26,7 @@ The database and API are designed to keep V1 simple, maintainable, and ready for
 
 - Gallery uses separate albums and photos collections. 
 
-- Email invitation history is stored without creating guest accounts. 
+- Guest invitation delivery and attendance responses are stored without creating guest accounts.
 
 - Partner invitation tokens are expiring and one-time use. 
 
@@ -105,6 +105,7 @@ Page 1
 |photos|Gallery photo metadata|many per album|
 |livestreams|External livestream configuration|1 active per wedding in V1|
 |email_invitations|Invitation email delivery history|many per wedding|
+|guest_invitations|Personal guest links, delivery state, and attendance response|many per wedding|
 
 
 
@@ -235,6 +236,8 @@ Page 3
 
 
 Use a unique index on tokenHash and a TTL index on expiresAt for cleanup if desired. The API must still verify usedAt/revokedAt before accepting a token. 
+
+Current implementation: partner links expire after seven days. Creating a new link revokes an earlier unused link for the same wedding. A unique partial index permits one pending invite per wedding/target role. The raw token is returned only at creation and is not stored; MongoDB keeps its HMAC-SHA256 hash. Acceptance checks expiry, revocation, active wedding/membership, target role, and the one-active-wedding-per-account rule in a transaction. The link is shared manually; partner email delivery is pending.
 
 ## **9. events Collection** 
 
@@ -379,6 +382,8 @@ Recommended active-only partial unique index on { weddingId } where deletedAt is
 
 ## **16. email_invitations Collection** 
 
+V1 amendment (2026-10-17): the implemented `guest_invitations` collection owns one invitation per wedding/recipient email, using a unique index on `{ weddingId, recipientEmail }` and a unique `tokenHash` index. It stores `weddingId`, normalized `recipientEmail`, HMAC-SHA256 `tokenHash`, `expiresAt`, `sendStatus` (PENDING/SENT/FAILED), `response` (PENDING/ATTENDING/DECLINED), `respondedAt`, `resendMessageId`, `sentAt`, `failedAt`, `errorCode`, and timestamps. The raw token appears only in the emailed personal link and guest access cookie. Attendance response data is retained for the couple's dashboard. The earlier `email_invitations` history table below remains design guidance for more advanced email auditing.
+
 |**Field**|**Type**|**Required**|**Notes**|
 |---|---|---|---|
 |_id|ObjectId|Yes|Primary key|
@@ -458,6 +463,8 @@ This keeps Wedding as the central aggregate while allowing each feature to evolv
 |livestreams|weddingId|Partial unique where deletedAt is null|
 |catering|weddingId|Partial unique where deletedAt is null|
 |email_invitations|weddingId + createdAt|History listing|
+|guest_invitations|weddingId + recipientEmail|Unique recipient per wedding|
+|guest_invitations|tokenHash|Unique private-link lookup|
 
 
 
@@ -618,6 +625,8 @@ V1 UI primarily exposes the four predefined event types. The API model remains f
 |POST|/api/v1/weddings/:weddingId/invitation/publish|Member|Publish current invitation|
 |GET|/api/v1/weddings/:weddingId/invitation/preview|Member|Preview invitation data|
 |POST|/api/v1/weddings/:weddingId/invitation/emails|Member|Send email invitation(s)|
+|GET|/api/v1/weddings/:weddingId/invitation/emails|Member|List recipient delivery and attendance status|
+|POST|/api/v1/guest-invitations/:token/respond|Guest token|Record attendance response; attending sets guest access cookie|
 
 
 
@@ -667,7 +676,7 @@ POST /api/v1/weddings/:weddingId/invitation/emails
 }
 ```
 
-The API validates recipient count and email format, creates PENDING email records, sends through Resend, updates each record to SENT or FAILED, and returns per-recipient status. 
+The API validates up to 10 recipient addresses per request, creates PENDING guest records, sends through Resend, updates each record to SENT or FAILED, and returns per-recipient status. The email contains only the wedding title, short invitation message, attendance prompt, and response button. Five send requests per wedding per day are allowed in the initial implementation. A failed send can be retried, rotating its token. Guests respond through a personal email link without accounts. An Attending response unlocks detailed wedding content; a Can't attend response records the decision without unlocking it.
 
 ### **Safeguards** 
 
@@ -733,7 +742,9 @@ Page 10
 
 
 
-Public endpoints return safe fields only. Admin-only fields such as deletedAt, provider message IDs, storage-management metadata, and internal flags are excluded. 
+Public endpoints return a basic teaser with the venue name but without the street address or map link until an attending guest token or active bride/groom membership is verified. The Dinesh & Usha sample remains public. Admin-only fields such as deletedAt, provider message IDs, storage-management metadata, and internal flags are excluded. Future events, gallery, and livestream endpoints must apply the same detail-access rule before serving protected content.
+
+Guest photo upload endpoints must require an attending invitation access check; a public slug alone is not enough to authorize uploads under the amended V1 policy.
 
 ### **R2 upload flow** 
 
@@ -764,7 +775,7 @@ This keeps large files away from the main application request path.
 
 ## **32. Public Wedding API** 
 
-The public summary returns only active, non-deleted weddings and only display fields: slug, title, bride/groom names, story, wedding date/timezone, and venue name/address/maps link. The Dinesh & Usha sample page is a separate static preview; stored weddings supply the live API and `/w/[slug]` pages.
+The public wedding endpoint returns only active, non-deleted weddings. Its unauthenticated teaser contains the slug, title, bride/groom names, wedding date/timezone, and venue name. Story, street address, and map link are returned only for an attending guest or active bride/groom member. The Dinesh & Usha sample page is a separate static preview; stored weddings supply the live API and `/w/[slug]` pages.
 
 |**Method**|**Endpoint**|**Purpose**|
 |---|---|---|
@@ -935,7 +946,7 @@ This order builds the central Wedding domain first, then adds modules around it.
 
 ## **40. Final V1 DB + API Baseline** 
 
-The V1 design uses MongoDB Atlas with 12 focused collections, explicit versioned REST APIs, a Wedding-centered domain model, Cloudflare R2 for images, Resend for invitation emails, and simple role-based authorization for Bride/Groom members. 
+The V1 design uses MongoDB Atlas with focused collections including the 2026-10-17 guest invitation/RSVP amendment, explicit versioned REST APIs, a Wedding-centered domain model, Cloudflare R2 for images, Resend for invitation emails, and simple role-based authorization for Bride/Groom members.
 
 **Key principle:** Store core wedding information once, expose safe public read models, keep admin operations authenticated, and keep guest access account-free. 
 

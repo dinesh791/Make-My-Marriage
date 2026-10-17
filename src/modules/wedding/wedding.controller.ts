@@ -6,6 +6,9 @@ import { AppError } from "@/lib/http/errors";
 import { readAuthJson, requireSameOrigin } from "@/lib/http/auth-request";
 import { getCurrentUser } from "@/modules/auth/auth.service";
 import { toPublicWeddingDto, toWeddingDto } from "./wedding.dto";
+import { toWeddingTeaserDto } from "./wedding.dto";
+import { guestAccessCookieName } from "@/lib/auth/guest-access";
+import { canViewWeddingDetails } from "@/modules/guest-invitation/guest-invitation.service";
 import * as service from "./wedding.service";
 import { createWeddingSchema, updateWeddingSchema } from "./wedding.validators";
 
@@ -78,11 +81,21 @@ export async function updateMemberWedding(request: NextRequest, weddingId: strin
   }
 }
 
-export async function getPublicWedding(slug: string) {
+export async function getPublicWedding(request: NextRequest, slug: string) {
   try {
     const wedding = await service.getPublicWeddingBySlug(slug);
     if (!wedding) throw new AppError("WEDDING_NOT_FOUND", "Wedding not found.", 404);
-    return successResponse(toPublicWeddingDto(wedding));
+    const sessionToken = request.cookies.get(SESSION_COOKIE_NAME)?.value;
+    const user = sessionToken ? await getCurrentUser(sessionToken) : null;
+    const unlocked = await canViewWeddingDetails(
+      String(wedding._id),
+      request.cookies.get(guestAccessCookieName(String(wedding._id)))?.value,
+      user?.id,
+    );
+    const response = successResponse(
+      unlocked ? toPublicWeddingDto(wedding) : toWeddingTeaserDto(wedding),
+    );
+    return privateResponse(response);
   } catch (error) {
     return failure(error);
   }
