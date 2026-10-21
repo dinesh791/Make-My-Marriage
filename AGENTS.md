@@ -10,11 +10,15 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 # Make My Marriage — Project Context
 
-Last reviewed: 2026-10-17
+Last reviewed: 2026-10-21
 
 Use this file for project context and implementation guidance. The confirmed V1 baseline is in `docs/PRD.md`, `docs/SYSTEM_DESIGN.md`, and `docs/DB_API_DESIGN.md`. Read this file and the relevant parts of those documents before implementing a feature. Verify progress against source code; a route, helper, or marketing description does not mean the user-facing feature is complete. Current progress, verification, and next steps are tracked separately in `docs/PROJECT_STATUS.md`.
 
-After completing a feature, update `docs/PROJECT_STATUS.md` with what changed, what is verified, what remains, and the next recommended step. Keep the confirmed V1 scope unless the product documents are deliberately revised. Never commit secrets; keep service credentials server-side.
+Update `docs/PROJECT_STATUS.md` only for major changes: completed features, significant fixes, major milestones, or important project decisions. For those updates, record what changed, what is verified, what remains, and the next recommended step. Keep routine troubleshooting, retries, intermediate progress, and minor edits in the chat instead of updating the status file. Keep the confirmed V1 scope unless the product documents are deliberately revised. Never commit secrets; keep service credentials server-side.
+
+## GitHub Push Approval
+
+Always summarize the changes and ask the user for confirmation before pushing changes to GitHub. Wait for explicit approval for the current set of changes before running `git push` or another action that publishes commits to GitHub. Approval for an earlier push does not authorize later pushes. Do not push automatically to trigger a deployment.
 
 ## Product Overview
 

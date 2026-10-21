@@ -639,6 +639,12 @@ p {
   line-height: 1.15;
   letter-spacing: -0.025em;
 }
+.wedding-hero h1.wedding-welcome-title {
+  max-width: 780px;
+  margin-inline: auto;
+  font-size: clamp(2.3rem, 5.5vw, 4.3rem);
+  text-wrap: balance;
+}
 .wedding-hero h1 span,
 .invitation-card h3 span {
   color: var(--wedding-gold);

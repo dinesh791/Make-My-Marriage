@@ -72,9 +72,11 @@ function SectionHeading({
 export function PublicWeddingSite({
   slug,
   homeHref = `/w/${slug}`,
+  welcomeHero = false,
 }: {
   slug: string;
   homeHref?: string;
+  welcomeHero?: boolean;
 }) {
   const mapImage =
     "https://lh3.googleusercontent.com/aida-public/AB6AXuDnPm93r7H1nFLwLmEpoc7Bt9B3I2SUTH_Puvs_3yHV18Jgle-oTihd6QmEu9O5fzotA9EW1zKKG5J3XOAXJPYONzRPKdsypqsopk6mv0U6oZfI5zsXMyAGYQHHSvCmzRm0CPbaIeTdbM0YocNxk1kZFUk3U3NAOTTZPd3Wc2ZRcFehqvYmJrkZralO48rpRLMTRRtSWOfxRI2KhfEJ2A5BqxZw5zjkpK12ycz3yIWd";
@@ -110,21 +112,36 @@ export function PublicWeddingSite({
       <section className="wedding-hero" id="home" aria-labelledby="wedding-title">
         <div className="wedding-hero-glow" aria-hidden="true" />
         <div className="wedding-hero-content">
-          <span className="wedding-invocation">With the blessings of the elders</span>
-          <p className="wedding-hero-intro">
-            Together with their beloved families, we invite you to celebrate the sacred union of
-          </p>
-          <h1 className="wedding-serif" id="wedding-title">
-            Dinesh <span aria-hidden="true">&amp;</span> Usha
-          </h1>
+          {welcomeHero ? (
+            <>
+              <h1 className="wedding-serif wedding-welcome-title" id="wedding-title">
+                Welcome to Our Wedding Celebration
+              </h1>
+              <p className="wedding-hero-intro">
+                Join us in celebrating love, family, and a beautiful new beginning.
+              </p>
+            </>
+          ) : (
+            <>
+              <span className="wedding-invocation">With the blessings of the elders</span>
+              <p className="wedding-hero-intro">
+                Together with their beloved families, we invite you to celebrate the sacred union of
+              </p>
+              <h1 className="wedding-serif" id="wedding-title">
+                Dinesh <span aria-hidden="true">&amp;</span> Usha
+              </h1>
+            </>
+          )}
           <div className="wedding-flourish" aria-hidden="true">
             <span />
             <span>♥</span>
             <span />
           </div>
-          <p className="wedding-hero-blessing">
-            An auspicious union bound by Vedic grace and eternal companionship
-          </p>
+          {!welcomeHero && (
+            <p className="wedding-hero-blessing">
+              An auspicious union bound by Vedic grace and eternal companionship
+            </p>
+          )}
 
           <div className="wedding-details-card" aria-label="Wedding date, time, and venue">
             <div className="wedding-detail">
@@ -156,19 +173,23 @@ export function PublicWeddingSite({
             </div>
           </div>
 
-          <p className="wedding-hero-description">
-            With gratitude for ancient traditions and the love of our families, we look forward to
-            beginning our life together surrounded by the people who mean the most to us.
-          </p>
-          <div className="wedding-actions">
-            <a className="wedding-button" href="#digital-invitation">
-              View full invitation
-            </a>
-            <a className="wedding-button wedding-button-outline" href="#wedding-events">
-              Wedding events &amp; itinerary
-            </a>
-          </div>
-          <p className="wedding-hero-footer">Sacred vows · Hand in hand · Seven sacred steps</p>
+          {!welcomeHero && (
+            <>
+              <p className="wedding-hero-description">
+                With gratitude for ancient traditions and the love of our families, we look forward
+                to beginning our life together surrounded by the people who mean the most to us.
+              </p>
+              <div className="wedding-actions">
+                <a className="wedding-button" href="#digital-invitation">
+                  View full invitation
+                </a>
+                <a className="wedding-button wedding-button-outline" href="#wedding-events">
+                  Wedding events &amp; itinerary
+                </a>
+              </div>
+              <p className="wedding-hero-footer">Sacred vows · Hand in hand · Seven sacred steps</p>
+            </>
+          )}
         </div>
       </section>
 
@@ -284,7 +305,7 @@ export function PublicWeddingSite({
               the occasion of our wedding.
             </p>
             <h3 className="wedding-serif">
-              Dinesh <span>&amp;</span> Usha
+              {welcomeHero ? "Bride" : "Dinesh"} <span>&amp;</span> {welcomeHero ? "Groom" : "Usha"}
             </h3>
             <div className="invitation-divider">
               <span>✦</span>
