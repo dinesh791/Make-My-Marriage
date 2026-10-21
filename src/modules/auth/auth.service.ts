@@ -1,3 +1,4 @@
+
 import "server-only";
 import { createHmac, randomBytes } from "node:crypto";
 import { getAuthEnv } from "@/lib/env/env";
@@ -38,32 +39,10 @@ export async function enforceAuthLimit(
   const bucket = Math.floor(now / windowMs);
   const end = (bucket + 1) * windowMs;
 
-  let hashedKey: string;
-
-  try {
-    hashedKey = hashAuthValue(`limit:${key}:${bucket}`);
-  } catch (error) {
-    console.error("Auth rate-limit diagnostic", {
-      operation: "hash",
-      errorType: error instanceof Error ? error.name : "non-error",
-    });
-    throw error;
-  }
-
-  let attempts: number;
-
-  try {
-    attempts = await repository.incrementAuthLimit(
-      hashedKey,
-      new Date(end + 60_000),
-    );
-  } catch (error) {
-    console.error("Auth rate-limit diagnostic", {
-      operation: "database-counter",
-      errorType: error instanceof Error ? error.name : "non-error",
-    });
-    throw error;
-  }
+  const attempts = await repository.incrementAuthLimit(
+    hashAuthValue(`limit:${key}:${bucket}`),
+    new Date(end + 60_000),
+  );
 
   if (attempts > limit) {
     throw new AppError(

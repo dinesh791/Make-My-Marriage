@@ -128,24 +128,7 @@ export async function deleteSession(tokenHash: string) {
 }
 
 export async function incrementAuthLimit(key: string, expiresAt: Date) {
-  try {
-    await connectToDatabase();
-  } catch (error) {
-    console.error("Auth database diagnostic", {
-      operation: "connect-and-verify-indexes",
-      errorType: error instanceof Error ? error.name : "non-error",
-      errorMessage:
-        error instanceof Error
-          ? error.message.startsWith("Authentication storage is not provisioned;")
-            ? "Authentication indexes missing or incorrectly configured"
-            : error.message.startsWith("Invalid environment configuration:")
-              ? "Invalid environment configuration"
-              : "Other connection error"
-          : "Non-error thrown",
-    });
-    throw error;
-  }
-
+  await connectToDatabase();
   try {
     const counter = await AuthRateLimitModel.findOneAndUpdate(
       { _id: key },
