@@ -1,3 +1,4 @@
+
 import "server-only";
 import mongoose, { type Types } from "mongoose";
 import { connectToDatabase as connectMongoose } from "@/lib/db/mongoose";
@@ -127,7 +128,16 @@ export async function deleteSession(tokenHash: string) {
 }
 
 export async function incrementAuthLimit(key: string, expiresAt: Date) {
-  await connectToDatabase();
+  try {
+    await connectToDatabase();
+  } catch (error) {
+    console.error("Auth database diagnostic", {
+      operation: "connect-and-verify-indexes",
+      errorType: error instanceof Error ? error.name : "non-error",
+    });
+    throw error;
+  }
+
   try {
     const counter = await AuthRateLimitModel.findOneAndUpdate(
       { _id: key },
