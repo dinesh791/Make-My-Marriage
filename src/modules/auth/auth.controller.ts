@@ -15,15 +15,15 @@ function failureCategory(error: unknown) {
   if (error.message.startsWith("Invalid environment configuration:")) return "environment";
   if (error.message === "Authentication storage is not provisioned; run npm run db:setup.")
     return "storage-indexes";
-  if (
-    [
-      "MongoServerSelectionError",
-      "MongoParseError",
-      "MongoServerError",
-      "MongoNetworkError",
-    ].includes(error.name)
-  )
-    return "database";
+  if (error.name === "MongoParseError") return "database-uri";
+  if (error.name === "MongoServerSelectionError") return "database-selection";
+  if (error.name === "MongoNetworkError") return "database-network";
+  if (error.name === "MongoServerError") {
+    const code = "code" in error ? error.code : undefined;
+    if (code === 18 || code === 8000) return "database-authentication";
+    if (code === 13) return "database-permission";
+    return "database-server";
+  }
   return "unknown";
 }
 
