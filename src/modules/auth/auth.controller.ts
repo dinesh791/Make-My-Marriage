@@ -8,6 +8,24 @@ import { loginSchema, registerSchema } from "./auth.validators";
 import * as service from "./auth.service";
 
 type Action = "register" | "login" | "logout" | "me";
+type AuthStage = "origin" | "rate-limit" | "account";
+
+function failureCategory(error: unknown) {
+  if (!(error instanceof Error)) return "unknown";
+  if (error.message.startsWith("Invalid environment configuration:")) return "environment";
+  if (error.message === "Authentication storage is not provisioned; run npm run db:setup.")
+    return "storage-indexes";
+  if (
+    [
+      "MongoServerSelectionError",
+      "MongoParseError",
+      "MongoServerError",
+      "MongoNetworkError",
+    ].includes(error.name)
+  )
+    return "database";
+  return "unknown";
+}
 
 function privateResponse(response: NextResponse) {
   response.headers.set("Cache-Control", "no-store, private");
@@ -16,15 +34,18 @@ function privateResponse(response: NextResponse) {
 }
 
 export async function authController(request: NextRequest, action: Action) {
+  let stage: AuthStage = "origin";
   try {
     const previousToken = request.cookies.get(SESSION_COOKIE_NAME)?.value;
     if (action === "me") {
+      stage = "account";
       const user = await service.getCurrentUser(previousToken);
       if (!user) throw new AppError("AUTH_SESSION_REQUIRED", "Please sign in to continue.", 401);
       return privateResponse(successResponse({ user }));
     }
     requireSameOrigin(request);
     if (action === "logout") {
+      stage = "account";
       await service.logout(previousToken);
       const response = successResponse(null, "Signed out successfully.");
       response.cookies.set(SESSION_COOKIE_NAME, "", { ...sessionCookieOptions, maxAge: 0 });
@@ -32,7 +53,9 @@ export async function authController(request: NextRequest, action: Action) {
     }
     // Shared database counter caps password work across instances, even with rotating emails.
     // Add trusted per-IP limits at the deployment edge before public launch.
+    stage = "rate-limit";
     await service.enforceAuthLimit(`global:${action}`, action === "register" ? 20 : 100, 60_000);
+    stage = "account";
     const result =
       action === "register"
         ? await service.register(await readAuthJson(request, registerSchema), previousToken)
@@ -58,7 +81,8 @@ export async function authController(request: NextRequest, action: Action) {
       }
       return privateResponse(response);
     }
-    // Database and validation internals may contain secrets; never return/log raw errors.
+    // Emit only fixed diagnostic labels. Raw errors can contain connection strings or user data.
+    console.error("Auth request unavailable", { action, stage, category: failureCategory(error) });
     return privateResponse(
       errorResponse(
         "SERVICE_UNAVAILABLE",
