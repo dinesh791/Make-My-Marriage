@@ -29,18 +29,51 @@ function newSession(remember: boolean) {
   };
 }
 
-export async function enforceAuthLimit(key: string, limit: number, windowMs: number) {
+export async function enforceAuthLimit(
+  key: string,
+  limit: number,
+  windowMs: number,
+) {
   const now = Date.now();
   const bucket = Math.floor(now / windowMs);
   const end = (bucket + 1) * windowMs;
-  const attempts = await repository.incrementAuthLimit(
-    hashAuthValue(`limit:${key}:${bucket}`),
-    new Date(end + 60_000),
-  );
-  if (attempts > limit) {
-    throw new AppError("RATE_LIMITED", "Too many attempts. Please try again later.", 429, {
-      retryAfter: Math.ceil((end - now) / 1000),
+
+  let hashedKey: string;
+
+  try {
+    hashedKey = hashAuthValue(`limit:${key}:${bucket}`);
+  } catch (error) {
+    console.error("Auth rate-limit diagnostic", {
+      operation: "hash",
+      errorType: error instanceof Error ? error.name : "non-error",
     });
+    throw error;
+  }
+
+  let attempts: number;
+
+  try {
+    attempts = await repository.incrementAuthLimit(
+      hashedKey,
+      new Date(end + 60_000),
+    );
+  } catch (error) {
+    console.error("Auth rate-limit diagnostic", {
+      operation: "database-counter",
+      errorType: error instanceof Error ? error.name : "non-error",
+    });
+    throw error;
+  }
+
+  if (attempts > limit) {
+    throw new AppError(
+      "RATE_LIMITED",
+      "Too many attempts. Please try again later.",
+      429,
+      {
+        retryAfter: Math.ceil((end - now) / 1000),
+      },
+    );
   }
 }
 
