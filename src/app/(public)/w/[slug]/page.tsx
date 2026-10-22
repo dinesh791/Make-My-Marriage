@@ -9,6 +9,7 @@ import { canViewWeddingDetails } from "@/modules/guest-invitation/guest-invitati
 import { guestAccessCookieName } from "@/lib/auth/guest-access";
 import { SESSION_COOKIE_NAME } from "@/lib/auth/session";
 import { getCurrentUser } from "@/modules/auth/auth.service";
+import { listPublishedEvents } from "@/modules/event/event.service";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -37,5 +38,8 @@ export default async function PublicWeddingPage({ params }: Props) {
     jar.get(guestAccessCookieName(String(wedding._id)))?.value,
     user?.id,
   );
-  return <LiveWeddingSite wedding={toPublicWeddingDto(wedding)} unlocked={unlocked} />;
+  const events = unlocked ? await listPublishedEvents(String(wedding._id)) : [];
+  return (
+    <LiveWeddingSite wedding={toPublicWeddingDto(wedding)} unlocked={unlocked} events={events} />
+  );
 }

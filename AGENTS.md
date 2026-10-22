@@ -10,7 +10,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 # Make My Marriage — Project Context
 
-Last reviewed: 2026-10-21
+Last reviewed: 2026-10-22
 
 Use this file for project context and implementation guidance. The confirmed V1 baseline is in `docs/PRD.md`, `docs/SYSTEM_DESIGN.md`, and `docs/DB_API_DESIGN.md`. Read this file and the relevant parts of those documents before implementing a feature. Verify progress against source code; a route, helper, or marketing description does not mean the user-facing feature is complete. Current progress, verification, and next steps are tracked separately in `docs/PROJECT_STATUS.md`.
 
@@ -47,9 +47,11 @@ src/
     (public)/w/[slug]/              Live wedding pages plus the Stitch sample preview
     api/v1/auth/                    Registration, login, logout, and current-user endpoints
     api/v1/weddings/                Create/list weddings, member details, and partner invite creation
+    api/v1/weddings/.../events/     Member event listing and predefined event saving
     api/v1/wedding-partner-invites/ Partner invite acceptance
     api/v1/guest-invitations/     Guest RSVP response
     api/v1/public/weddings/         Public read endpoint for active wedding summaries
+    api/v1/public/weddings/.../events/  Gated published event schedule
     api/v1/health/                  Implemented health endpoint
     page.tsx                         Renders the sample wedding at `/`
     globals.css                      Shared product surfaces and responsive styling
@@ -67,6 +69,7 @@ src/
   models/                             Auth, wedding, membership, and partner-invite schemas
   modules/auth/                       Auth controller, service, repository, validators, and DTO
   modules/wedding/                    Wedding controller, service, repository, validators, and DTO
+  modules/event/                      Event controller, service, repository, validators, and DTO
   modules/partner-invite/             One-time invite controller, service, and repository
   modules/guest-invitation/           Email delivery, RSVP, and detail-access rules
   types/                              Shared-type guidance only; no shared application types

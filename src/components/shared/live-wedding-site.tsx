@@ -1,14 +1,17 @@
 import Link from "next/link";
 import { Brand } from "@/components/shared/brand";
 import type { PublicWeddingDto } from "@/modules/wedding/wedding.dto";
+import type { EventDto } from "@/modules/event/event.dto";
 import { WeddingCountdown } from "./wedding-countdown";
 
 export function LiveWeddingSite({
   wedding,
   unlocked,
+  events,
 }: {
   wedding: PublicWeddingDto;
   unlocked: boolean;
+  events: EventDto[];
 }) {
   const homeHref = `/w/${wedding.slug}`;
   const coupleNames =
@@ -28,6 +31,7 @@ export function LiveWeddingSite({
           <nav className="wedding-links" aria-label="Wedding website">
             <a href="#home">Home</a>
             {unlocked && wedding.story && <a href="#our-story">Our Story</a>}
+            {events.length > 0 && <a href="#wedding-events">Events</a>}
             <a href="#digital-invitation">Invitation</a>
             {unlocked && <a href="#venue">Venue</a>}
           </nav>
@@ -116,6 +120,45 @@ export function LiveWeddingSite({
                 <cite>— {coupleNames}</cite>
               </div>
             </blockquote>
+          </div>
+        </section>
+      )}
+
+      {unlocked && events.length > 0 && (
+        <section className="wedding-section live-events-section" id="wedding-events">
+          <div className="wedding-content">
+            <div className="wedding-section-heading">
+              <span className="wedding-eyebrow">✦ Celebrate with us ✦</span>
+              <h2 className="wedding-serif">Wedding Events</h2>
+            </div>
+            <div className="live-events-grid">
+              {events.map((event) => (
+                <article className="live-event-card" key={event.type}>
+                  <span className="wedding-eyebrow">{event.title}</span>
+                  <h3 className="wedding-serif">{event.title}</h3>
+                  <p className="live-event-time">
+                    {new Intl.DateTimeFormat("en-IN", {
+                      dateStyle: "full",
+                      timeStyle: "short",
+                      timeZone: "Asia/Kolkata",
+                    }).format(new Date(event.startsAt!))}
+                  </p>
+                  {event.venueName && <p>{event.venueName}</p>}
+                  {event.address && <p>{event.address}</p>}
+                  {event.description && <p>{event.description}</p>}
+                  {event.mapsUrl && (
+                    <a
+                      className="wedding-text-link"
+                      href={event.mapsUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      View directions <span aria-hidden="true">↗</span>
+                    </a>
+                  )}
+                </article>
+              ))}
+            </div>
           </div>
         </section>
       )}
@@ -219,6 +262,7 @@ export function LiveWeddingSite({
             <strong>Quick navigation</strong>
             <a href="#home">Home</a>
             {unlocked && wedding.story && <a href="#our-story">Our story</a>}
+            {events.length > 0 && <a href="#wedding-events">Events</a>}
             <a href="#digital-invitation">Invitation</a>
             {unlocked && <a href="#venue">Venue</a>}
           </div>

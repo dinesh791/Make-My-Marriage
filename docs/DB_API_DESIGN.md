@@ -247,7 +247,7 @@ Current implementation: partner links expire after seven days. Creating a new li
 |weddingId|ObjectId|Yes|Reference to wedding|
 |type|String|Yes|ENGAGEMENT / NALANGU / MUHURTHAM / RECEPTION|
 |title|String|Yes|Display title|
-|startsAt|Date|Yes|UTC instant|
+|startsAt|Date|null|UTC instant; required when enabled, null for an incomplete draft|
 |endsAt|Date|null|No|Optional|
 |timezone|String|Yes|Default Asia/Kolkata|
 |venueName|String|null|No|Event venue|
@@ -261,6 +261,8 @@ Current implementation: partner links expire after seven days. Creating a new li
 
 
 Recommended active-only partial unique index on { weddingId, type } where deletedAt is null. This prevents duplicate active event types while allowing a deleted event to be recreated. 
+
+The V1 event editor always shows the four predefined types, including unsaved draft cards. Saving a card upserts its type for that wedding. Draft fields may remain incomplete; an event cannot be enabled without a start date and time. Editing Muhurtham does not update the wedding's separate weddingDate field.
 
 ## **10. invitations Collection** 
 
@@ -607,6 +609,7 @@ Creation flow also creates the creator's wedding_members record, default shoppin
 |**Method**|**Endpoint**|**Auth**|**Purpose**|
 |---|---|---|---|
 |GET|/api/v1/weddings/:weddingId/events|Member|List events|
+|PUT|/api/v1/weddings/:weddingId/events/:type|Member|Save one predefined event or draft idempotently|
 |POST|/api/v1/weddings/:weddingId/events|Member|Create event if later enabled|
 |GET|/api/v1/events/:eventId|Member|Get event|
 |PATCH|/api/v1/events/:eventId|Member|Update event|

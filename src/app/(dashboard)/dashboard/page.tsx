@@ -10,6 +10,7 @@ import { toWeddingDto } from "@/modules/wedding/wedding.dto";
 import { getPartnerStatus } from "@/modules/partner-invite/partner-invite.service";
 import { PartnerInvitePanel } from "@/components/shared/partner-invite-panel";
 import { GuestInvitationPanel } from "@/components/shared/guest-invitation-panel";
+import { listMemberEvents } from "@/modules/event/event.service";
 import {
   emailDeliveryConfigured,
   listGuestInvitations,
@@ -59,6 +60,8 @@ export default async function DashboardPage() {
   const wedding = toWeddingDto(savedWedding);
   const partnerStatus = await getPartnerStatus(wedding.id, user.id);
   const guestInvitations = await listGuestInvitations(wedding.id, user.id);
+  const events = await listMemberEvents(wedding.id, user.id);
+  const scheduledEvents = events.filter((event) => event.enabled && event.startsAt);
   const today = new Intl.DateTimeFormat("en-IN", {
     dateStyle: "full",
     timeZone: "Asia/Kolkata",
@@ -71,7 +74,7 @@ export default async function DashboardPage() {
           <p className="sidebar-label">Your workspace</p>
           <nav className="sidebar-nav" aria-label="Wedding workspace">
             {workspaceLinks.map(([label, icon, href], index) =>
-              index === 0 ? (
+              index === 0 || label === "Wedding events" ? (
                 <Link
                   className={index === 0 ? "active" : ""}
                   data-icon={icon}
@@ -156,11 +159,11 @@ export default async function DashboardPage() {
           <section className="dashboard-stats" aria-label="Wedding summary">
             <article className="stat-card">
               <span>Events planned</span>
-              <strong>—</strong>
+              <strong>{events.filter((event) => event.startsAt).length}</strong>
             </article>
             <article className="stat-card">
               <span>Events in your schedule</span>
-              <strong>—</strong>
+              <strong>{scheduledEvents.length}</strong>
             </article>
             <article className="stat-card">
               <span>Planning checklist</span>
@@ -172,12 +175,31 @@ export default async function DashboardPage() {
             <section className="dashboard-card" id="events">
               <div className="card-heading">
                 <h2>Upcoming events</h2>
-                <span className="coming-soon">Coming soon</span>
+                <Link className="text-link" href="/dashboard/events">
+                  Manage events →
+                </Link>
               </div>
-              <p className="workspace-placeholder">
-                Your saved wedding details appear above. Add Engagement, Nalangu, Muhurtham, and
-                Reception dates when event planning is available.
-              </p>
+              {scheduledEvents.length ? (
+                <ul className="dashboard-event-list">
+                  {scheduledEvents.map((event) => (
+                    <li key={event.type}>
+                      <strong>{event.title}</strong>
+                      <span>
+                        {new Intl.DateTimeFormat("en-IN", {
+                          dateStyle: "medium",
+                          timeStyle: "short",
+                          timeZone: "Asia/Kolkata",
+                        }).format(new Date(event.startsAt!))}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="workspace-placeholder">
+                  Add dates and details for Engagement, Nalangu, Muhurtham, and Reception. Save
+                  drafts until you are ready to show them to attending guests.
+                </p>
+              )}
             </section>
 
             <section className="dashboard-card" id="invitation">

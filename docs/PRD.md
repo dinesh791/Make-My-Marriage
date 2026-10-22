@@ -68,6 +68,8 @@ V1 provides these predefined Tamil wedding events:
 
 Each event can contain date, time, venue, address, and description. The couple can enable or disable events. 
 
+New weddings show all four predefined event cards. Couples may save incomplete cards as drafts; only enabled events with a date and time appear to attending guests. The main wedding date and countdown remain separate from the Muhurtham event date.
+
 ## **7. Wedding Invitation** 
 
 The couple selects from predefined invitation templates such as Traditional Tamil, Simple Classic, and Modern. The invitation can contain bride/groom names, couple photo, wedding message, event details, venue, date/time, Google Maps, and wedding website link. 

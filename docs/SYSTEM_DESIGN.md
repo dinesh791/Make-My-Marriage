@@ -116,6 +116,8 @@ Partner joining is separate from normal wedding invitations sent to relatives an
 
 Each wedding receives a unique slug such as **/w/dinesh-usha** . Anyone with the link can view basic couple/date/venue-name information. Full invitation, story, street address, map link, and detailed venue content require bride/groom membership or an attending guest invitation. Guest access is checked on the server for pages and REST responses; hiding a UI section alone does not protect it. The sample wedding remains a public preview.
 
+The four predefined event cards can be saved as drafts. Published events require a start date and time and are included in the detailed wedding page and public events API only after the same attending-guest or member access check. The wedding's main date and countdown do not change when a Muhurtham event is edited.
+
 ## **11. Invitation & Email** 
 
 Predefined invitation templates use the central wedding/event data. Sharing supports WhatsApp, copy link, and email. 
