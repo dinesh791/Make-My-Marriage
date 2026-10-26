@@ -10,6 +10,7 @@ import { guestAccessCookieName } from "@/lib/auth/guest-access";
 import { SESSION_COOKIE_NAME } from "@/lib/auth/session";
 import { getCurrentUser } from "@/modules/auth/auth.service";
 import { listPublishedEvents } from "@/modules/event/event.service";
+import { getPublishedInvitation } from "@/modules/invitation/invitation.service";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -39,7 +40,13 @@ export default async function PublicWeddingPage({ params }: Props) {
     user?.id,
   );
   const events = unlocked ? await listPublishedEvents(String(wedding._id)) : [];
+  const invitation = unlocked ? await getPublishedInvitation(String(wedding._id)) : undefined;
   return (
-    <LiveWeddingSite wedding={toPublicWeddingDto(wedding)} unlocked={unlocked} events={events} />
+    <LiveWeddingSite
+      wedding={toPublicWeddingDto(wedding)}
+      unlocked={unlocked}
+      events={events}
+      invitation={invitation}
+    />
   );
 }

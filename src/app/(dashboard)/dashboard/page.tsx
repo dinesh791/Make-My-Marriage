@@ -19,8 +19,8 @@ import {
 const workspaceLinks = [
   ["Overview", "O", "#overview"],
   ["Couple details", "C", "#couple"],
-  ["Wedding events", "E", "#events"],
-  ["Invitation", "I", "#invitation"],
+  ["Wedding events", "E", "/dashboard/events"],
+  ["Invitation", "I", "/dashboard/invitation"],
   ["Wedding website", "W", "#website"],
   ["Shopping checklist", "S", "#shopping"],
   ["Catering", "F", "#catering"],
@@ -62,6 +62,12 @@ export default async function DashboardPage() {
   const guestInvitations = await listGuestInvitations(wedding.id, user.id);
   const events = await listMemberEvents(wedding.id, user.id);
   const scheduledEvents = events.filter((event) => event.enabled && event.startsAt);
+  const requestTime = new Date();
+  const upcomingEvents = scheduledEvents
+    .filter((event) => new Date(event.startsAt!).getTime() >= requestTime.getTime())
+    .sort(
+      (left, right) => new Date(left.startsAt!).getTime() - new Date(right.startsAt!).getTime(),
+    );
   const today = new Intl.DateTimeFormat("en-IN", {
     dateStyle: "full",
     timeZone: "Asia/Kolkata",
@@ -74,7 +80,7 @@ export default async function DashboardPage() {
           <p className="sidebar-label">Your workspace</p>
           <nav className="sidebar-nav" aria-label="Wedding workspace">
             {workspaceLinks.map(([label, icon, href], index) =>
-              index === 0 || label === "Wedding events" ? (
+              index === 0 || label === "Wedding events" || label === "Invitation" ? (
                 <Link
                   className={index === 0 ? "active" : ""}
                   data-icon={icon}
@@ -175,13 +181,10 @@ export default async function DashboardPage() {
             <section className="dashboard-card" id="events">
               <div className="card-heading">
                 <h2>Upcoming events</h2>
-                <Link className="text-link" href="/dashboard/events">
-                  Manage events →
-                </Link>
               </div>
-              {scheduledEvents.length ? (
+              {upcomingEvents.length ? (
                 <ul className="dashboard-event-list">
-                  {scheduledEvents.map((event) => (
+                  {upcomingEvents.map((event) => (
                     <li key={event.type}>
                       <strong>{event.title}</strong>
                       <span>
@@ -195,10 +198,7 @@ export default async function DashboardPage() {
                   ))}
                 </ul>
               ) : (
-                <p className="workspace-placeholder">
-                  Add dates and details for Engagement, Nalangu, Muhurtham, and Reception. Save
-                  drafts until you are ready to show them to attending guests.
-                </p>
+                <p className="workspace-placeholder">No upcoming events are scheduled.</p>
               )}
             </section>
 
@@ -218,9 +218,12 @@ export default async function DashboardPage() {
                 <Link href="/dashboard/wedding/edit">
                   Edit wedding details <span aria-hidden="true">→</span>
                 </Link>
-                <span className="action-disabled">
-                  Preview invitation <small>Coming soon</small>
-                </span>
+                <Link href="/dashboard/events">
+                  Wedding events <span aria-hidden="true">→</span>
+                </Link>
+                <Link href="/dashboard/invitation">
+                  Edit invitation <span aria-hidden="true">→</span>
+                </Link>
                 <CopyWeddingLinkButton slug={wedding.slug} />
               </div>
             </section>

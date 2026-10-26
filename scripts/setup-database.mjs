@@ -8,6 +8,7 @@ import { WeddingMemberModel } from "../src/models/wedding-member.ts";
 import { WeddingPartnerInviteModel } from "../src/models/wedding-partner-invite.ts";
 import { GuestInvitationModel } from "../src/models/guest-invitation.ts";
 import { EventModel } from "../src/models/event.ts";
+import { InvitationModel } from "../src/models/invitation.ts";
 
 nextEnv.loadEnvConfig(process.cwd(), process.env.NODE_ENV !== "production", {
   info() {},
@@ -41,6 +42,7 @@ try {
     WeddingPartnerInviteModel,
     GuestInvitationModel,
     EventModel,
+    InvitationModel,
   ]) {
     phase = `creating the ${model.collection.collectionName} collection`;
     await model.createCollection();

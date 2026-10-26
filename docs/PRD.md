@@ -74,6 +74,8 @@ New weddings show all four predefined event cards. Couples may save incomplete c
 
 The couple selects from predefined invitation templates such as Traditional Tamil, Simple Classic, and Modern. The invitation can contain bride/groom names, couple photo, wedding message, event details, venue, date/time, Google Maps, and wedding website link. 
 
+Current invitation release starts with Traditional Tamil only and no photo upload. The couple edits a welcome message, previews it alongside saved wedding details and enabled events, and saves it as a draft. Publish makes the saved message visible to attending guests; later drafts do not replace it until published. The default invitation remains visible before the first publish. Other templates and photo upload remain planned V1 work.
+
 **Sharing:** WhatsApp share and copy link. No WhatsApp API integration in V1. 
 
 ## **8. Wedding Website** 
@@ -103,6 +105,8 @@ V1 keeps livestreaming simple. The couple can configure a livestream link and en
 The dashboard is the main control center for the bride and groom. It provides access to Couple Details, Wedding Information, Events, Invitation, Wedding Website, Shopping, Catering, Gallery, and Livestream. 
 
 Quick actions: Edit Wedding, Preview Website, Preview Invitation, and Share Wedding. 
+
+The dashboard's Upcoming Events card summarizes enabled, dated events. Creating, changing, enabling, and disabling events happens in the Wedding Events workspace.
 
 ## **14. Guest Flow** 
 

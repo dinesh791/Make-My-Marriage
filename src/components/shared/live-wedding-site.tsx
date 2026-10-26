@@ -2,16 +2,20 @@ import Link from "next/link";
 import { Brand } from "@/components/shared/brand";
 import type { PublicWeddingDto } from "@/modules/wedding/wedding.dto";
 import type { EventDto } from "@/modules/event/event.dto";
+import type { InvitationContent } from "@/modules/invitation/invitation.types";
+import { TraditionalTamilInvitation } from "./traditional-tamil-invitation";
 import { WeddingCountdown } from "./wedding-countdown";
 
 export function LiveWeddingSite({
   wedding,
   unlocked,
   events,
+  invitation,
 }: {
   wedding: PublicWeddingDto;
   unlocked: boolean;
   events: EventDto[];
+  invitation?: InvitationContent;
 }) {
   const homeHref = `/w/${wedding.slug}`;
   const coupleNames =
@@ -169,34 +173,8 @@ export function LiveWeddingSite({
             <span className="wedding-eyebrow">✦ You are invited ✦</span>
             <h2 className="wedding-serif">A Wedding Invitation</h2>
           </div>
-          {unlocked ? (
-            <article className="invitation-card">
-              <span className="invitation-emblem" aria-hidden="true">
-                ம
-              </span>
-              <span className="wedding-eyebrow">Together with our families</span>
-              <p className="invitation-message">
-                We warmly invite you to join us and share your blessings on our wedding day.
-              </p>
-              <h3 className="wedding-serif">{coupleNames}</h3>
-              <div className="invitation-divider" aria-hidden="true">
-                <span>✦</span>
-              </div>
-              <p className="invitation-date">{date}</p>
-              <p className="invitation-venue">
-                {wedding.venue.name} · {wedding.venue.address}
-              </p>
-              {wedding.venue.mapsUrl && (
-                <a
-                  className="wedding-text-link"
-                  href={wedding.venue.mapsUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  View venue directions <span aria-hidden="true">↗</span>
-                </a>
-              )}
-            </article>
+          {unlocked && invitation ? (
+            <TraditionalTamilInvitation wedding={wedding} invitation={invitation} events={events} />
           ) : (
             <article className="invitation-card">
               <h3 className="wedding-serif">Invitation details</h3>

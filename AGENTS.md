@@ -52,6 +52,8 @@ src/
     api/v1/guest-invitations/     Guest RSVP response
     api/v1/public/weddings/         Public read endpoint for active wedding summaries
     api/v1/public/weddings/.../events/  Gated published event schedule
+    api/v1/weddings/.../invitation/     Member draft, preview, and publish endpoints
+    api/v1/public/weddings/.../invitation/  Gated published invitation
     api/v1/health/                  Implemented health endpoint
     page.tsx                         Renders the sample wedding at `/`
     globals.css                      Shared product surfaces and responsive styling
@@ -70,6 +72,7 @@ src/
   modules/auth/                       Auth controller, service, repository, validators, and DTO
   modules/wedding/                    Wedding controller, service, repository, validators, and DTO
   modules/event/                      Event controller, service, repository, validators, and DTO
+  modules/invitation/                 Draft/publish controller, service, repository, validators, and DTO
   modules/partner-invite/             One-time invite controller, service, and repository
   modules/guest-invitation/           Email delivery, RSVP, and detail-access rules
   types/                              Shared-type guidance only; no shared application types

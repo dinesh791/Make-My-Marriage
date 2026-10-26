@@ -22,7 +22,7 @@ Use Node.js 22.17 or newer. The scaffold pages and health endpoint run without s
 
 Email/password registration, login, logout, and current-user lookup are implemented. A signed-in user can create one wedding, choose Bride/Groom, and edit its saved details. A partner can join through a private invitation link. The couple can email personal guest invitations, see attendance responses, and unlock the full wedding page for attending guests. Sending to relatives requires a verified Resend sender and a publicly reachable app URL; the local Resend test sender is limited to the account owner's inbox. Google sign-in and password recovery remain pending. The installed `next-auth` package is unused; session behavior and the future Google linking requirements are documented in [docs/AUTH_DESIGN.md](docs/AUTH_DESIGN.md).
 
-MongoDB automatic collection and index creation are disabled. Run the explicit setup command before using authentication or wedding features; it creates the declared auth, wedding, partner-invite, guest-invitation, and event collections and adds their indexes without seeding accounts or dropping existing data. Never commit secrets. Keep external integrations in `src/lib`, and enforce wedding membership in protected services.
+MongoDB automatic collection and index creation are disabled. Run the explicit setup command before using authentication or wedding features; it creates the declared auth, wedding, partner-invite, guest-invitation, event, and invitation collections and adds their indexes without seeding accounts or dropping existing data. Never commit secrets. Keep external integrations in `src/lib`, and enforce wedding membership in protected services.
 
 1. Run `npm install`.
 2. Copy `.env.example` to `.env.local` if it does not already exist. Set `MONGODB_URI` with an explicit database name, a random `AUTH_SECRET` of at least 32 characters, and `NEXT_PUBLIC_APP_URL=http://localhost:3000`. Google/R2/Resend credentials are not required for email/password authentication.
@@ -41,13 +41,17 @@ MongoDB automatic collection and index creation are disabled. Run the explicit s
 - `npm run test:auth:integration` — verify the running local app against `makemymarriage_dev`; temporary accounts/sessions are cleaned up automatically.
 - `npm run test:wedding:integration` — verify local wedding persistence and membership; its temporary account and wedding are cleaned up.
 
+With the local app and database running, run `node --experimental-strip-types scripts/verify-local-events.mjs --keep` followed by `node --experimental-strip-types scripts/verify-local-invitation.mjs` for the event and invitation HTTP flow. The first command keeps disposable local fixtures for the second; the second removes them when complete.
+
+Wedding Events is the only place to create and edit events. Upcoming Events on the dashboard lists enabled events with dates. The Invitation workspace offers a Traditional Tamil preview and editable message. Save draft keeps changes private; Publish shows the saved message to attending guests on the live wedding page. Photo uploads and other templates are pending.
+
 ## Local database, step by step
 
 MongoDB Compass is a viewer and editor for a database. The application also needs MongoDB Server; this computer has it installed. The local setup uses a separate replica set because registration and wedding creation use database transactions. It listens only on `127.0.0.1:27018` and stores development data in Git-ignored `.local/mongodb/data`. The existing MongoDB Windows service on port 27017 is left alone.
 
 1. Run `npm run db:local:start`. Repeat this after a reboot before starting the app. On Windows the script finds the installed `mongod.exe`; on other systems it uses `mongod` from PATH. You can set `MONGOD_BIN` if needed.
 2. Create Git-ignored `.env.development.local` containing `MONGODB_URI=mongodb://127.0.0.1:27018/makemymarriage_dev?replicaSet=mmm_local&directConnection=true`. Keep `AUTH_SECRET` and `NEXT_PUBLIC_APP_URL=http://localhost:3000` in `.env.local`. Development loads both files, with the local database URI taking precedence; the Atlas URI in `.env.local` is preserved.
-3. Run `npm run db:setup`. This creates `users`, `auth_sessions`, `auth_rate_limits`, `weddings`, `wedding_members`, `wedding_partner_invites`, `guest_invitations`, and `events` with their indexes. It does not create accounts or event records.
+3. Run `npm run db:setup`. This creates `users`, `auth_sessions`, `auth_rate_limits`, `weddings`, `wedding_members`, `wedding_partner_invites`, `guest_invitations`, `events`, and `invitations` with their indexes. It does not create accounts, event records, or invitation drafts.
 4. Run `npm run dev`. Open `http://localhost:3000/register`, create an account, sign out, and sign in again. Then create a wedding in the dashboard. Google sign-in and password recovery are still pending.
 5. In Compass, connect with `mongodb://127.0.0.1:27018/makemymarriage_dev?replicaSet=mmm_local&directConnection=true` and open `makemymarriage_dev` to inspect the collections. Passwords are stored as hashes; sessions store token digests.
 6. With the app running, run `npm run test:auth:integration` and `npm run test:wedding:integration` for temporary end-to-end checks. The scripts first confirm the running app reads the configured development database, then remove their own test accounts and weddings. Restart the app after changing either environment file.

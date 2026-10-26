@@ -271,17 +271,18 @@ The V1 event editor always shows the four predefined types, including unsaved dr
 |_id|ObjectId|Yes|Primary key|
 |weddingId|ObjectId|Yes|One active invitation per wedding in V1|
 |templateKey|String|Yes|Example: tamil-traditional|
-|defaultLocale|String|Yes|en or ta|
-|message.en|String|null|No|English message|
-|message.ta|String|null|No|Tamil message|
-|theme|Object|No|Color/font/theme settings|
+|message|String|Yes|Member-only saved draft message, maximum 1000 characters|
+|revision|Number|Yes|Increments on each draft save; checked on write|
+|publishedMessage|String|null|No|Guest-visible snapshot from the last Publish|
+|publishedRevision|Number|Yes|Revision copied on Publish; 0 before first publish|
 |publishedAt|Date|null|No|When current version published|
-|status|String|Yes|DRAFT / PUBLISHED|
 |deletedAt|Date|null|No|Soft delete|
 
 
 
 Recommended active-only partial unique index on { weddingId } where deletedAt is null. 
+
+The implemented first template is `tamil-traditional`, with a single plain-text message and no photo uploads. Localized messages, themes, and other templates remain future design fields. A missing invitation record or unpublished draft serves the original default message to authorized guests. Save and Publish reject stale revisions with 409, and published reads never return the draft message.
 
 Make My Marriage - DB & REST API Design v1.0 
 
@@ -624,9 +625,10 @@ V1 UI primarily exposes the four predefined event types. The API model remains f
 |**Method**|**Endpoint**|**Auth**|**Purpose**|
 |---|---|---|---|
 |GET|/api/v1/weddings/:weddingId/invitation|Member|Get invitation configuration|
-|PATCH|/api/v1/weddings/:weddingId/invitation|Member|Update template/content/theme|
-|POST|/api/v1/weddings/:weddingId/invitation/publish|Member|Publish current invitation|
+|PATCH|/api/v1/weddings/:weddingId/invitation|Member|Save message draft with expected revision|
+|POST|/api/v1/weddings/:weddingId/invitation/publish|Member|Publish saved draft revision|
 |GET|/api/v1/weddings/:weddingId/invitation/preview|Member|Preview invitation data|
+|GET|/api/v1/public/weddings/:slug/invitation|Attending guest or member|Published invitation only; locked visitors receive null|
 |POST|/api/v1/weddings/:weddingId/invitation/emails|Member|Send email invitation(s)|
 |GET|/api/v1/weddings/:weddingId/invitation/emails|Member|List recipient delivery and attendance status|
 |POST|/api/v1/guest-invitations/:token/respond|Guest token|Record attendance response; attending sets guest access cookie|

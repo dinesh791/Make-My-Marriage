@@ -122,6 +122,8 @@ The four predefined event cards can be saved as drafts. Published events require
 
 Predefined invitation templates use the central wedding/event data. Sharing supports WhatsApp, copy link, and email. 
 
+The first implemented template is Traditional Tamil. Its editable message is kept in a member-only draft. Publish copies the saved revision into a separate published snapshot, so later draft edits cannot appear on the guest page. The preview uses saved wedding details and enabled event data; the real wedding page and public invitation API serve only the published snapshot or the initial default. Both enforce the existing attending-guest/member detail gate. Event changes are managed in Wedding Events; the dashboard Upcoming Events card is a read-only summary.
+
 **Email flow:** Bride/Groom enters recipient email → REST API validates and rate limits request → invitation service stores a token hash and sends a short email through Resend with the wedding title, invitation message, attendance prompt, and response button → the linked RSVP page shows the couple, date, and venue name and lets the recipient answer Attending or Can't attend → an Attending answer sets an HTTP-only guest access cookie for the full wedding invitation and detailed venue information. Recipients do not need an account. The personal link acts as a bearer secret and should not be forwarded; strict mailbox verification is a future privacy enhancement.
 
 ## **12. MongoDB Atlas** 
