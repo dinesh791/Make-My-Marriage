@@ -1,6 +1,6 @@
 # Make My Marriage — Project Status
 
-Last reviewed: 2026-10-25
+Last reviewed: 2026-10-26
 
 This is the living progress tracker for the project. `AGENTS.md` contains persistent project and implementation guidance. The confirmed V1 requirements and design are in `PRD.md`, `SYSTEM_DESIGN.md`, and `DB_API_DESIGN.md` in this folder.
 
@@ -13,6 +13,8 @@ This is the living progress tracker for the project. `AGENTS.md` contains persis
 - A local MongoDB replica set runs on `127.0.0.1:27018` for development. All nine declared collections/index groups, including `events` and `invitations`, were provisioned locally and in Atlas `makemymarriage_dev` on 2026-10-25. Local users and weddings have not been migrated. The Vercel Production deployment at `make-my-marriage-lyart.vercel.app` reached Atlas on 2026-10-21: a dummy login returned the expected 401 and a disposable registration returned 201. The test account and its session were removed. Atlas then contained one user and one wedding.
 
 ## Completed and Verified
+
+- Expanded Wedding Events with custom ceremonies and Edit and Delete icon buttons on all event cards. The heading has an Add Wedding Event dialog with a guest-visibility checkbox. New ceremonies save as drafts by default or become visible immediately when enabled with a date and time. Edit opens a card's fields; Delete asks for confirmation, soft deletes the record, and removes the card and guest schedule entry. Deleted default cards remain hidden after reload. The main wedding date remains separate. TypeScript, focused lint, and the earlier production build passed. A disposable local HTTP check on 2026-10-26 passed draft and visible custom creation, missing-date rejection, custom editing/deletion, deletion of both unsaved and saved default cards, member listing, and unauthenticated delete rejection; temporary records were removed. Browser visual and live deployment checks remain pending.
 
 - Implemented the Traditional Tamil invitation editor on 2026-10-25. Bride/groom members can edit a plain-text welcome message, save a draft, preview it with current wedding details and enabled events, and explicitly publish the saved revision. Guest pages and the public invitation API read only the published snapshot (or original default before first publish) after the existing attendance/member access check. Stale edits return 409. No photo upload or additional template is implemented. The dashboard Invitation link opens the editor. Wedding Events owns all event changes; Upcoming Events remains a summary of future enabled events. Local HTTP checks covered event drafts, membership, RSVP gating, invitation drafts/publishing, stale writes, validation, origin protection, and rendered pages; disposable fixtures were removed. Typecheck and targeted lint passed. Browser visual checks remain pending. The ninth collection and indexes were provisioned locally and in Atlas; the code is not yet pushed or deployed.
 
@@ -88,7 +90,7 @@ Follow the implementation order in `DB_API_DESIGN.md` and update this section as
 
 1. Finish authentication: configure Google OAuth and Resend, implement safe Google account linking and password recovery, decide/implement email verification, add profile APIs, and complete deployment abuse controls/monitoring. Email/password accounts, sessions and dashboard protection are complete.
 2. Finish the wedding domain: verify partner-invite create/accept against Atlas and wedding create/read/edit there, add wedding archive, and seed default invitation/checklist data when those modules are added. Atlas collections/indexes are provisioned.
-3. Verify the event editor and invitation editor visually in a browser and through the public APIs after deployment. Local HTTP and rendered-page checks passed; live deployment verification remains.
+3. Verify event add/edit/delete, draft privacy, and guest visibility in the browser; then verify the event and invitation editors on the live deployment after the changes are approved and pushed. Local member API creation, editing, and deletion passed.
 4. Add the remaining invitation templates, photo workflow, and WhatsApp sharing in a later iteration. Guest email sending and RSVP access have a user-confirmed local happy-path check; they still need a verified production sender.
 5. Implement the shopping checklist and catering details.
 6. Implement gallery albums/photos and guest upload through validated Cloudflare R2 upload flows.
@@ -106,6 +108,6 @@ Follow the implementation order in `DB_API_DESIGN.md` and update this section as
 
 ## Next Recommended Step
 
-After user approval to push, deploy and verify the event and invitation work on the live site, including draft privacy and declined-guest access. Then plan shopping checklist or the remaining invitation templates. Decide with the user whether the Atlas account and wedding replace earlier local records or whether selected local records need migration; no migration has occurred. A verified sending domain is still needed before emailing relatives.
+Manually verify event add/edit/delete, draft privacy, and guest visibility in the browser. After user approval to push, deploy and verify the event and invitation work on the live site, including declined-guest access. Then plan shopping checklist or the remaining invitation templates. Decide with the user whether the Atlas account and wedding replace earlier local records or whether selected local records need migration; no migration has occurred. A verified sending domain is still needed before emailing relatives.
 
 After each feature, verify its implementation in source, record the checks actually run, move completed work out of the pending list, and revise the next step.

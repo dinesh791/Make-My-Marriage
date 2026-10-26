@@ -116,7 +116,7 @@ Partner joining is separate from normal wedding invitations sent to relatives an
 
 Each wedding receives a unique slug such as **/w/dinesh-usha** . Anyone with the link can view basic couple/date/venue-name information. Full invitation, story, street address, map link, and detailed venue content require bride/groom membership or an attending guest invitation. Guest access is checked on the server for pages and REST responses; hiding a UI section alone does not protect it. The sample wedding remains a public preview.
 
-The four predefined event cards can be saved as drafts. Published events require a start date and time and are included in the detailed wedding page and public events API only after the same attending-guest or member access check. The wedding's main date and countdown do not change when a Muhurtham event is edited.
+The four predefined event cards can be saved as drafts. Members can also create custom events in the Wedding Events workspace. Creation defaults to a draft; the member may enable guest visibility immediately if a start date and time are supplied. Each card has Edit and Delete icon actions. Deleting either kind soft deletes its record; an unsaved predefined card gets a deletion marker so it stays hidden after reload. Published predefined or custom events require a start date and time and are included in the detailed wedding page and public events API only after the same attending-guest or member access check. Deleted events are excluded from both. The wedding's main date and countdown do not change when any event is edited or deleted.
 
 ## **11. Invitation & Email** 
 

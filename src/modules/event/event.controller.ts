@@ -9,7 +9,7 @@ import { getCurrentUser } from "@/modules/auth/auth.service";
 import { canViewWeddingDetails } from "@/modules/guest-invitation/guest-invitation.service";
 import { getPublicWeddingBySlug } from "@/modules/wedding/wedding.service";
 import * as service from "./event.service";
-import { saveEventSchema } from "./event.validators";
+import { saveCustomEventSchema, saveEventSchema } from "./event.validators";
 
 function privateResponse(response: Response) {
   response.headers.set("Cache-Control", "no-store, private");
@@ -51,6 +51,65 @@ export async function saveMemberEvent(request: NextRequest, weddingId: string, t
     const input = await readAuthJson(request, saveEventSchema);
     const event = await service.saveMemberEvent(weddingId, user.id, eventType, input);
     return privateResponse(successResponse({ event }, "Event saved."));
+  } catch (error) {
+    return privateResponse(failure(error));
+  }
+}
+
+export async function createMemberCustomEvent(request: NextRequest, weddingId: string) {
+  try {
+    requireSameOrigin(request);
+    const user = await signedInUser(request);
+    const input = await readAuthJson(request, saveCustomEventSchema);
+    const event = await service.createMemberCustomEvent(weddingId, user.id, input);
+    return privateResponse(successResponse({ event }, "Custom event created."));
+  } catch (error) {
+    return privateResponse(failure(error));
+  }
+}
+
+export async function saveMemberCustomEvent(
+  request: NextRequest,
+  weddingId: string,
+  eventId: string,
+) {
+  try {
+    requireSameOrigin(request);
+    const user = await signedInUser(request);
+    const input = await readAuthJson(request, saveCustomEventSchema);
+    const event = await service.saveMemberCustomEvent(weddingId, user.id, eventId, input);
+    return privateResponse(successResponse({ event }, "Custom event saved."));
+  } catch (error) {
+    return privateResponse(failure(error));
+  }
+}
+
+export async function deleteMemberCustomEvent(
+  request: NextRequest,
+  weddingId: string,
+  eventId: string,
+) {
+  try {
+    requireSameOrigin(request);
+    const user = await signedInUser(request);
+    await service.deleteMemberCustomEvent(weddingId, user.id, eventId);
+    return privateResponse(successResponse({ deleted: true }, "Custom event deleted."));
+  } catch (error) {
+    return privateResponse(failure(error));
+  }
+}
+
+export async function deleteMemberPredefinedEvent(
+  request: NextRequest,
+  weddingId: string,
+  type: string,
+) {
+  try {
+    requireSameOrigin(request);
+    const user = await signedInUser(request);
+    const eventType = service.parseEventType(type);
+    await service.deleteMemberPredefinedEvent(weddingId, user.id, eventType);
+    return privateResponse(successResponse({ deleted: true }, "Event deleted."));
   } catch (error) {
     return privateResponse(failure(error));
   }

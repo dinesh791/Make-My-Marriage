@@ -8,6 +8,7 @@ import { UserModel } from "../src/models/user.ts";
 import { AuthSessionModel } from "../src/models/auth-session.ts";
 import { WeddingModel } from "../src/models/wedding.ts";
 import { WeddingMemberModel } from "../src/models/wedding-member.ts";
+import { EventModel } from "../src/models/event.ts";
 import { verifyServerDatabase } from "./verify-server-database.mjs";
 
 nextEnv.loadEnvConfig(process.cwd(), true, { info() {}, error() {} });
@@ -75,6 +76,173 @@ try {
   const { wedding } = (await created.json()).data;
   assert.equal(wedding.title, "Local Test Wedding");
 
+  step = "create custom event";
+  const eventDraft = {
+    title: "Local Test Mehendi",
+    startsAt: null,
+    endsAt: null,
+    venueName: null,
+    address: null,
+    mapsUrl: null,
+    description: null,
+    enabled: false,
+  };
+  const eventCreated = await call(`/api/v1/weddings/${wedding.id}/events`, {
+    method: "POST",
+    cookie,
+    body: eventDraft,
+  });
+  assert.equal(eventCreated.status, 200);
+  const customEvent = (await eventCreated.json()).data.event;
+  assert.equal(customEvent.title, "Local Test Mehendi");
+  assert.equal(customEvent.enabled, false);
+  assert.match(customEvent.type, /^CUSTOM_/);
+
+  step = "create visible custom event";
+  const visibleCreated = await call(`/api/v1/weddings/${wedding.id}/events`, {
+    method: "POST",
+    cookie,
+    body: {
+      ...eventDraft,
+      title: "Local Test Welcome Dinner",
+      startsAt: "2027-01-17T12:00:00.000Z",
+      enabled: true,
+    },
+  });
+  const visibleResult = await visibleCreated.json();
+  assert.equal(visibleCreated.status, 200);
+  assert.equal(visibleResult.data.event.enabled, true);
+  const missingDate = await call(`/api/v1/weddings/${wedding.id}/events`, {
+    method: "POST",
+    cookie,
+    body: { ...eventDraft, title: "Invalid Visible Event", enabled: true },
+  });
+  assert.equal(missingDate.status, 422);
+
+  step = "edit custom event";
+  const eventEdited = await call(`/api/v1/weddings/${wedding.id}/events/custom/${customEvent.id}`, {
+    method: "PATCH",
+    cookie,
+    body: {
+      ...eventDraft,
+      title: "Local Test Sangeet",
+      startsAt: "2027-01-19T12:00:00.000Z",
+      enabled: true,
+    },
+  });
+  assert.equal(eventEdited.status, 200);
+  assert.equal((await eventEdited.json()).data.event.title, "Local Test Sangeet");
+  const eventList = await call(`/api/v1/weddings/${wedding.id}/events`, { cookie });
+  assert.equal(eventList.status, 200);
+  assert.ok((await eventList.json()).data.events.some((event) => event.id === customEvent.id));
+
+  step = "delete custom event";
+  const eventDeleted = await call(
+    `/api/v1/weddings/${wedding.id}/events/custom/${customEvent.id}`,
+    { method: "DELETE", cookie },
+  );
+  assert.equal(eventDeleted.status, 200);
+  const afterDelete = await call(`/api/v1/weddings/${wedding.id}/events`, { cookie });
+  assert.equal(afterDelete.status, 200);
+  assert.ok(!(await afterDelete.json()).data.events.some((event) => event.id === customEvent.id));
+  const deletedRecord = await EventModel.findById(customEvent.id).lean();
+  assert.ok(deletedRecord?.deletedAt);
+  assert.equal(deletedRecord?.enabled, false);
+
+  step = "keep custom event order after deletion";
+  const laterCreated = await call(`/api/v1/weddings/${wedding.id}/events`, {
+    method: "POST",
+    cookie,
+    body: { ...eventDraft, title: "Local Test Farewell" },
+  });
+  assert.equal(laterCreated.status, 200);
+  const laterEvent = (await laterCreated.json()).data.event;
+  assert.ok(laterEvent.sortOrder > visibleResult.data.event.sortOrder);
+  const orderedList = await call(`/api/v1/weddings/${wedding.id}/events`, { cookie });
+  assert.equal(orderedList.status, 200);
+  const customIds = (await orderedList.json()).data.events
+    .filter((event) => event.type.startsWith("CUSTOM_"))
+    .map((event) => event.id);
+  assert.deepEqual(customIds, [visibleResult.data.event.id, laterEvent.id]);
+
+  step = "delete predefined event";
+  const defaultDeleted = await call(`/api/v1/weddings/${wedding.id}/events/ENGAGEMENT`, {
+    method: "DELETE",
+    cookie,
+  });
+  assert.equal(defaultDeleted.status, 200);
+  const afterDefaultDelete = await call(`/api/v1/weddings/${wedding.id}/events`, { cookie });
+  assert.equal(afterDefaultDelete.status, 200);
+  assert.ok(
+    !(await afterDefaultDelete.json()).data.events.some((event) => event.type === "ENGAGEMENT"),
+  );
+  const defaultTombstone = await EventModel.findOne({ weddingId: wedding.id, type: "ENGAGEMENT" });
+  assert.ok(defaultTombstone?.deletedAt);
+  const defaultDeletedAgain = await call(`/api/v1/weddings/${wedding.id}/events/ENGAGEMENT`, {
+    method: "DELETE",
+    cookie,
+  });
+  assert.equal(defaultDeletedAgain.status, 200);
+  assert.equal(await EventModel.countDocuments({ weddingId: wedding.id, type: "ENGAGEMENT" }), 1);
+
+  step = "delete saved predefined event";
+  const defaultSaved = await call(`/api/v1/weddings/${wedding.id}/events/NALANGU`, {
+    method: "PUT",
+    cookie,
+    body: {
+      startsAt: "2027-01-18T12:00:00.000Z",
+      endsAt: null,
+      venueName: null,
+      address: null,
+      mapsUrl: null,
+      description: null,
+      enabled: true,
+    },
+  });
+  assert.equal(defaultSaved.status, 200);
+  const savedDefaultDeleted = await call(`/api/v1/weddings/${wedding.id}/events/NALANGU`, {
+    method: "DELETE",
+    cookie,
+  });
+  assert.equal(savedDefaultDeleted.status, 200);
+  const savedDefaultRecord = await EventModel.findOne({ weddingId: wedding.id, type: "NALANGU" });
+  assert.ok(savedDefaultRecord?.deletedAt);
+  assert.equal(savedDefaultRecord?.enabled, false);
+  const savedDefaultDeletedAgain = await call(`/api/v1/weddings/${wedding.id}/events/NALANGU`, {
+    method: "DELETE",
+    cookie,
+  });
+  assert.equal(savedDefaultDeletedAgain.status, 200);
+  assert.equal(await EventModel.countDocuments({ weddingId: wedding.id, type: "NALANGU" }), 1);
+  const defaultRecreated = await call(`/api/v1/weddings/${wedding.id}/events/NALANGU`, {
+    method: "PUT",
+    cookie,
+    body: {
+      startsAt: null,
+      endsAt: null,
+      venueName: null,
+      address: null,
+      mapsUrl: null,
+      description: null,
+      enabled: false,
+    },
+  });
+  assert.equal(defaultRecreated.status, 200);
+  const recreatedDeleted = await call(`/api/v1/weddings/${wedding.id}/events/NALANGU`, {
+    method: "DELETE",
+    cookie,
+  });
+  assert.equal(recreatedDeleted.status, 200);
+  assert.equal(
+    await EventModel.countDocuments({ weddingId: wedding.id, type: "NALANGU", deletedAt: null }),
+    0,
+  );
+  assert.equal(await EventModel.countDocuments({ weddingId: wedding.id, type: "NALANGU" }), 2);
+  assert.equal(
+    (await call(`/api/v1/weddings/${wedding.id}/events/RECEPTION`, { method: "DELETE" })).status,
+    401,
+  );
+
   step = "read wedding";
   const list = await call("/api/v1/weddings", { cookie });
   assert.equal(list.status, 200);
@@ -102,7 +270,7 @@ try {
   assert.equal(duplicate.status, 409);
   assert.equal((await call(`/api/v1/weddings/${wedding.id}`)).status, 401);
   console.log(
-    "PASS: local wedding creation, read, membership, access control, and one active wedding rule.",
+    "PASS: local wedding creation, custom and predefined event deletion, membership, access control, and one active wedding rule.",
   );
 } catch {
   console.error(
@@ -121,6 +289,7 @@ try {
           .lean();
         const weddingIds = members.map((member) => member.weddingId);
         await WeddingMemberModel.deleteMany({ userId: user._id });
+        await EventModel.deleteMany({ weddingId: { $in: weddingIds } });
         await WeddingModel.deleteMany({ _id: { $in: weddingIds } });
         await AuthSessionModel.deleteMany({ userId: user._id });
         await UserModel.deleteOne({ _id: user._id });

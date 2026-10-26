@@ -1,12 +1,22 @@
 import mongoose, { Schema, type InferSchemaType, type Model } from "mongoose";
 
 export const EVENT_TYPES = ["ENGAGEMENT", "NALANGU", "MUHURTHAM", "RECEPTION"] as const;
-export type EventType = (typeof EVENT_TYPES)[number];
+export type PredefinedEventType = (typeof EVENT_TYPES)[number];
+export type EventType = PredefinedEventType | `CUSTOM_${string}`;
 
 export const eventSchema = new Schema(
   {
     weddingId: { type: Schema.Types.ObjectId, required: true, ref: "Wedding" },
-    type: { type: String, enum: EVENT_TYPES, required: true },
+    type: {
+      type: String,
+      required: true,
+      validate: {
+        validator: (value: string) =>
+          EVENT_TYPES.includes(value as (typeof EVENT_TYPES)[number]) ||
+          /^CUSTOM_[0-9a-f-]{36}$/i.test(value),
+        message: "Invalid event type.",
+      },
+    },
     title: { type: String, required: true, trim: true, maxlength: 120 },
     startsAt: { type: Date, default: null },
     endsAt: { type: Date, default: null },

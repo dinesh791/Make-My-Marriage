@@ -1,19 +1,25 @@
 import type { Types } from "mongoose";
-import { EVENT_TYPES, type EventRecord, type EventType } from "@/models/event";
+import {
+  EVENT_TYPES,
+  type EventRecord,
+  type EventType,
+  type PredefinedEventType,
+} from "@/models/event";
 
-const titles: Record<EventType, string> = {
+const titles: Record<PredefinedEventType, string> = {
   ENGAGEMENT: "Engagement",
   NALANGU: "Nalangu",
   MUHURTHAM: "Muhurtham",
   RECEPTION: "Reception",
 };
 
-export function eventTitle(type: EventType) {
+export function eventTitle(type: PredefinedEventType) {
   return titles[type];
 }
 
 export function eventOrder(type: EventType) {
-  return EVENT_TYPES.indexOf(type);
+  const order = EVENT_TYPES.indexOf(type as (typeof EVENT_TYPES)[number]);
+  return order === -1 ? Number.MAX_SAFE_INTEGER : order;
 }
 
 export function toEventDto(event: EventRecord & { _id: Types.ObjectId }) {
@@ -35,7 +41,7 @@ export function toEventDto(event: EventRecord & { _id: Types.ObjectId }) {
 
 export type EventDto = ReturnType<typeof toEventDto>;
 
-export function emptyEventDto(type: EventType): EventDto {
+export function emptyEventDto(type: PredefinedEventType): EventDto {
   return {
     id: "",
     type,

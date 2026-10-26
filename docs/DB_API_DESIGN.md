@@ -245,7 +245,7 @@ Current implementation: partner links expire after seven days. Creating a new li
 |---|---|---|---|
 |_id|ObjectId|Yes|Primary key|
 |weddingId|ObjectId|Yes|Reference to wedding|
-|type|String|Yes|ENGAGEMENT / NALANGU / MUHURTHAM / RECEPTION|
+|type|String|Yes|ENGAGEMENT / NALANGU / MUHURTHAM / RECEPTION, or a unique CUSTOM_<uuid> key|
 |title|String|Yes|Display title|
 |startsAt|Date|null|UTC instant; required when enabled, null for an incomplete draft|
 |endsAt|Date|null|No|Optional|
@@ -262,7 +262,7 @@ Current implementation: partner links expire after seven days. Creating a new li
 
 Recommended active-only partial unique index on { weddingId, type } where deletedAt is null. This prevents duplicate active event types while allowing a deleted event to be recreated. 
 
-The V1 event editor always shows the four predefined types, including unsaved draft cards. Saving a card upserts its type for that wedding. Draft fields may remain incomplete; an event cannot be enabled without a start date and time. Editing Muhurtham does not update the wedding's separate weddingDate field.
+The event editor initially shows the four predefined types, including unsaved draft cards. Saving a predefined card upserts its type for that wedding. Members may add additional custom event records with unique `CUSTOM_<uuid>` type keys. Each card has Edit and Delete actions. Deleting a saved event sets `deletedAt` and disables it; deleting an unsaved predefined card creates a deleted marker so it remains hidden after reload. Repeating the delete reuses the existing marker. Draft fields may remain incomplete; an event cannot be enabled without a start date and time. Custom events share the existing active-only `{ weddingId, type }` unique index. Custom events receive a sort order above all earlier events, including deleted ones, so adding an event after deletion does not change the remaining cards' order. Editing or deleting any event does not update the wedding's separate `weddingDate` field.
 
 ## **10. invitations Collection** 
 
@@ -611,14 +611,17 @@ Creation flow also creates the creator's wedding_members record, default shoppin
 |---|---|---|---|
 |GET|/api/v1/weddings/:weddingId/events|Member|List events|
 |PUT|/api/v1/weddings/:weddingId/events/:type|Member|Save one predefined event or draft idempotently|
-|POST|/api/v1/weddings/:weddingId/events|Member|Create event if later enabled|
+|DELETE|/api/v1/weddings/:weddingId/events/:type|Member|Soft delete a predefined event, including an unsaved default card|
+|POST|/api/v1/weddings/:weddingId/events|Member|Create a custom wedding event; immediate visibility requires a start date/time|
+|PATCH|/api/v1/weddings/:weddingId/events/custom/:eventId|Member|Edit a custom wedding event|
+|DELETE|/api/v1/weddings/:weddingId/events/custom/:eventId|Member|Soft delete a custom wedding event|
 |GET|/api/v1/events/:eventId|Member|Get event|
 |PATCH|/api/v1/events/:eventId|Member|Update event|
 |DELETE|/api/v1/events/:eventId|Member|Soft delete event|
 
 
 
-V1 UI primarily exposes the four predefined event types. The API model remains flexible enough to support custom events later. 
+The Wedding Events UI provides four initial event cards and an Add Wedding Event dialog for custom ceremonies. The dialog defaults to a draft and offers a checkbox for immediate guest visibility when a start date/time is supplied. Cards use icon buttons to edit or to delete after confirmation; deleted records are excluded from member lists and the guest schedule.
 
 ## **26. Invitation API** 
 

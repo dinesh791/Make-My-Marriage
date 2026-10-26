@@ -17,15 +17,6 @@ export default async function WeddingEventsPage() {
         <Link className="text-link" href="/dashboard">
           ← Back to dashboard
         </Link>
-        <div className="event-workspace-heading">
-          <span className="eyebrow">Your wedding workspace</span>
-          <h1>Wedding events</h1>
-          <p>
-            Plan Engagement, Nalangu, Muhurtham, and Reception. Save unfinished plans as drafts;
-            enabled events with a date and time appear for attending guests.
-          </p>
-          <p>Your main wedding date and countdown are edited separately in Wedding details.</p>
-        </div>
         <WeddingEventsForm weddingId={String(wedding._id)} events={events} />
       </div>
     </main>

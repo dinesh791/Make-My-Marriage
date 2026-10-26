@@ -66,9 +66,9 @@ V1 provides these predefined Tamil wedding events:
 
 - Reception 
 
-Each event can contain date, time, venue, address, and description. The couple can enable or disable events. 
+Each event can contain a title, date, time, venue, address, map link, and description. In addition to the four predefined cards, the couple can add, edit, and enable or disable custom wedding events.
 
-New weddings show all four predefined event cards. Couples may save incomplete cards as drafts; only enabled events with a date and time appear to attending guests. The main wedding date and countdown remain separate from the Muhurtham event date.
+New weddings show all four predefined event cards. Couples may add custom ceremonies from the Wedding Events workspace. The Add Event form saves a draft by default; couples may instead check Show this event to attending guests when a date and time are provided. Each card has Edit and Delete icon actions. Deleting a predefined or custom card removes it from the workspace and guest schedule after confirmation; the couple can add that ceremony again as a custom event. Couples may save incomplete cards as drafts; only enabled events with a date and time appear to attending guests. The main wedding date and countdown remain separate from the Muhurtham event date.
 
 ## **7. Wedding Invitation** 
 
