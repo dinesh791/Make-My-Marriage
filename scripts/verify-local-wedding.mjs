@@ -9,6 +9,7 @@ import { AuthSessionModel } from "../src/models/auth-session.ts";
 import { WeddingModel } from "../src/models/wedding.ts";
 import { WeddingMemberModel } from "../src/models/wedding-member.ts";
 import { EventModel } from "../src/models/event.ts";
+import { ShoppingItemModel } from "../src/models/shopping-item.ts";
 import { verifyServerDatabase } from "./verify-server-database.mjs";
 
 nextEnv.loadEnvConfig(process.cwd(), true, { info() {}, error() {} });
@@ -75,6 +76,62 @@ try {
   assert.equal(created.status, 201);
   const { wedding } = (await created.json()).data;
   assert.equal(wedding.title, "Local Test Wedding");
+
+  step = "shopping checklist";
+  const shoppingPath = `/api/v1/weddings/${wedding.id}/shopping-items`;
+  const shoppingList = await call(shoppingPath, { cookie });
+  assert.equal(shoppingList.status, 200);
+  const suggestedItems = (await shoppingList.json()).data.items;
+  assert.equal(suggestedItems.length, 12);
+  assert.ok(suggestedItems.every((item) => item.isDefault && !item.completed));
+  const completedSuggestion = await call(`/api/v1/shopping-items/${suggestedItems[0].id}`, {
+    method: "PATCH",
+    cookie,
+    body: { completed: true },
+  });
+  assert.equal(completedSuggestion.status, 200);
+  assert.equal((await completedSuggestion.json()).data.item.completed, true);
+  const createdShoppingItem = await call(shoppingPath, {
+    method: "POST",
+    cookie,
+    body: { title: "Local Test Shopping Item", category: "WEDDING" },
+  });
+  assert.equal(createdShoppingItem.status, 201);
+  const customShoppingItem = (await createdShoppingItem.json()).data.item;
+  const editedShoppingItem = await call(`/api/v1/shopping-items/${customShoppingItem.id}`, {
+    method: "PATCH",
+    cookie,
+    body: { title: "Updated Shopping Item", category: "BRIDE" },
+  });
+  assert.equal(editedShoppingItem.status, 200);
+  assert.equal((await editedShoppingItem.json()).data.item.category, "BRIDE");
+  const deletedSuggestion = await call(`/api/v1/shopping-items/${suggestedItems[1].id}`, {
+    method: "DELETE",
+    cookie,
+  });
+  assert.equal(deletedSuggestion.status, 200);
+  const afterShoppingDelete = await call(shoppingPath, { cookie });
+  assert.equal(afterShoppingDelete.status, 200);
+  const afterShoppingItems = (await afterShoppingDelete.json()).data.items;
+  assert.equal(afterShoppingItems.length, 12);
+  assert.ok(!afterShoppingItems.some((item) => item.id === suggestedItems[1].id));
+  assert.ok(afterShoppingItems.some((item) => item.id === customShoppingItem.id));
+  assert.equal((await call(shoppingPath)).status, 401);
+  assert.equal(
+    (
+      await call(`/api/v1/shopping-items/${customShoppingItem.id}`, {
+        method: "PATCH",
+        body: { completed: true },
+      })
+    ).status,
+    401,
+  );
+  const shoppingPage = await call("/dashboard/shopping", { cookie });
+  assert.equal(shoppingPage.status, 200);
+  const shoppingHtml = await shoppingPage.text();
+  assert.match(shoppingHtml, /Shopping checklist/);
+  assert.match(shoppingHtml, /aria-current="page"/);
+  assert.match(shoppingHtml, /Wedding events/);
 
   step = "create custom event";
   const eventDraft = {
@@ -270,7 +327,7 @@ try {
   assert.equal(duplicate.status, 409);
   assert.equal((await call(`/api/v1/weddings/${wedding.id}`)).status, 401);
   console.log(
-    "PASS: local wedding creation, custom and predefined event deletion, membership, access control, and one active wedding rule.",
+    "PASS: local wedding, shopping checklist, events, membership, access control, and one active wedding rule.",
   );
 } catch {
   console.error(
@@ -290,6 +347,7 @@ try {
         const weddingIds = members.map((member) => member.weddingId);
         await WeddingMemberModel.deleteMany({ userId: user._id });
         await EventModel.deleteMany({ weddingId: { $in: weddingIds } });
+        await ShoppingItemModel.deleteMany({ weddingId: { $in: weddingIds } });
         await WeddingModel.deleteMany({ _id: { $in: weddingIds } });
         await AuthSessionModel.deleteMany({ userId: user._id });
         await UserModel.deleteOne({ _id: user._id });

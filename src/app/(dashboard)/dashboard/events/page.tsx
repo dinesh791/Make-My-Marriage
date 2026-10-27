@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { WeddingEventsForm } from "@/components/shared/wedding-events-form";
 import { requireUser } from "@/lib/auth/current-user";
@@ -12,13 +11,8 @@ export default async function WeddingEventsPage() {
   const events = await listMemberEvents(String(wedding._id), user.id);
 
   return (
-    <main className="dashboard-app setup-dashboard">
-      <div className="setup-dashboard-inner event-workspace">
-        <Link className="text-link" href="/dashboard">
-          ← Back to dashboard
-        </Link>
-        <WeddingEventsForm weddingId={String(wedding._id)} events={events} />
-      </div>
-    </main>
+    <div className="setup-dashboard-inner event-workspace">
+      <WeddingEventsForm weddingId={String(wedding._id)} events={events} />
+    </div>
   );
 }

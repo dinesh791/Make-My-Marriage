@@ -10,7 +10,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 # Make My Marriage — Project Context
 
-Last reviewed: 2026-10-26
+Last reviewed: 2026-10-27
 
 Use this file for project context and implementation guidance. The confirmed V1 baseline is in `docs/PRD.md`, `docs/SYSTEM_DESIGN.md`, and `docs/DB_API_DESIGN.md`. Read this file and the relevant parts of those documents before implementing a feature. Verify progress against source code; a route, helper, or marketing description does not mean the user-facing feature is complete. Current progress, verification, and next steps are tracked separately in `docs/PROJECT_STATUS.md`.
 
@@ -48,6 +48,8 @@ src/
     api/v1/auth/                    Registration, login, logout, and current-user endpoints
     api/v1/weddings/                Create/list weddings, member details, and partner invite creation
     api/v1/weddings/.../events/     Member event listing, predefined event saving, and custom event creation/editing/deletion
+    api/v1/weddings/.../shopping-items/  Member shopping checklist listing and creation
+    api/v1/shopping-items/          Member item editing and deletion
     api/v1/wedding-partner-invites/ Partner invite acceptance
     api/v1/guest-invitations/     Guest RSVP response
     api/v1/public/weddings/         Public read endpoint for active wedding summaries
@@ -72,6 +74,7 @@ src/
   modules/auth/                       Auth controller, service, repository, validators, and DTO
   modules/wedding/                    Wedding controller, service, repository, validators, and DTO
   modules/event/                      Event controller, service, repository, validators, and DTO
+  modules/shopping/                   Shared member checklist controller, service, repository, validators, and DTO
   modules/invitation/                 Draft/publish controller, service, repository, validators, and DTO
   modules/partner-invite/             One-time invite controller, service, and repository
   modules/guest-invitation/           Email delivery, RSVP, and detail-access rules

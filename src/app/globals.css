@@ -13,6 +13,272 @@
   --font-sans: Arial, Helvetica, sans-serif;
 }
 
+/* Private shopping checklist */
+.shopping-workspace {
+  width: min(100%, 1080px);
+  margin: 0 auto;
+}
+.shopping-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin: 1.5rem 0;
+}
+.shopping-heading h1 {
+  margin: 0.35rem 0;
+  color: var(--wine-dark);
+  font-family: Georgia, serif;
+  font-size: clamp(2rem, 4vw, 2.7rem);
+}
+.shopping-heading p {
+  max-width: 650px;
+  margin: 0.35rem 0 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+.shopping-heading .button {
+  flex: 0 0 auto;
+}
+.shopping-progress,
+.shopping-section {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 8px 24px #351b2408;
+}
+.shopping-progress {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1rem;
+  padding: clamp(1.2rem, 3vw, 2rem);
+}
+.shopping-progress h2 {
+  margin: 0.4rem 0 0;
+  color: var(--wine-dark);
+  font-family: Georgia, serif;
+  font-size: 1.5rem;
+}
+.shopping-progress > strong {
+  align-self: center;
+  color: var(--wine);
+  font-size: 1.25rem;
+}
+.shopping-progress progress {
+  width: 100%;
+  height: 0.7rem;
+  grid-column: 1 / -1;
+  accent-color: var(--wine);
+}
+.shopping-progress-categories {
+  display: flex;
+  flex-wrap: wrap;
+  grid-column: 1 / -1;
+  gap: 0.55rem;
+}
+.shopping-progress-categories span {
+  border-radius: 999px;
+  padding: 0.35rem 0.7rem;
+  background: var(--rose);
+  color: var(--wine-dark);
+  font-size: 0.8rem;
+}
+.shopping-tabs {
+  display: flex;
+  overflow-x: auto;
+  gap: 0.3rem;
+  margin: 1.5rem 0;
+  border-bottom: 1px solid var(--line);
+}
+.shopping-tabs button {
+  flex: 0 0 auto;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  padding: 0.75rem 0.9rem;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.84rem;
+}
+.shopping-tabs button.active {
+  border-color: var(--wine);
+  color: var(--wine-dark);
+  font-weight: 700;
+}
+.shopping-section {
+  overflow: hidden;
+  margin: 1.35rem 0;
+}
+.shopping-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.15rem 1.4rem;
+  background: #fdf7f5;
+}
+.shopping-section-heading h2 {
+  margin: 0;
+  color: var(--wine-dark);
+  font-family: Georgia, serif;
+  font-size: 1.35rem;
+}
+.shopping-section-heading span {
+  color: var(--wine);
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+.shopping-items {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.shopping-items li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 64px;
+  padding: 0.75rem 1.4rem;
+  border-top: 1px solid var(--line);
+}
+.shopping-check {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  min-width: 0;
+  cursor: pointer;
+}
+.shopping-check input {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 auto;
+  accent-color: var(--wine);
+  cursor: pointer;
+}
+.shopping-check span {
+  overflow-wrap: anywhere;
+}
+.shopping-items li.completed .shopping-check span {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+.shopping-item-actions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 0.3rem;
+}
+.shopping-item-actions button {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--wine);
+  cursor: pointer;
+  font-size: 1.15rem;
+}
+.shopping-item-actions button:hover,
+.shopping-item-actions button:focus-visible {
+  border-color: var(--line);
+  background: var(--rose);
+}
+.shopping-item-actions svg {
+  width: 18px;
+  height: 18px;
+}
+.shopping-empty {
+  margin: 0;
+  padding: 1.5rem;
+  color: var(--muted);
+}
+.shopping-error {
+  color: #9b2533;
+  font-size: 0.9rem;
+}
+.shopping-dialog-backdrop {
+  position: fixed;
+  z-index: 1000;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: #21151999;
+}
+.shopping-dialog {
+  width: min(100%, 500px);
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: clamp(1.2rem, 4vw, 2rem);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 24px 80px #1c111533;
+}
+.shopping-dialog h2 {
+  margin: 0 0 0.4rem;
+  color: var(--wine-dark);
+  font-family: Georgia, serif;
+}
+.shopping-dialog p {
+  color: var(--muted);
+}
+.shopping-dialog form {
+  display: grid;
+  gap: 0.55rem;
+  margin-top: 1.25rem;
+}
+.shopping-dialog label {
+  margin-top: 0.5rem;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+.shopping-dialog input,
+.shopping-dialog select {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  padding: 0.65rem 0.8rem;
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+}
+.shopping-dialog input:focus-visible,
+.shopping-dialog select:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 1px;
+}
+.shopping-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.7rem;
+  margin-top: 1.2rem;
+}
+@media (max-width: 700px) {
+  .shopping-heading {
+    align-items: start;
+    flex-direction: column;
+  }
+  .shopping-heading .button {
+    width: 100%;
+  }
+  .shopping-section-heading,
+  .shopping-items li {
+    padding-right: 0.9rem;
+    padding-left: 0.9rem;
+  }
+  .shopping-section-heading h2 {
+    font-size: 1.2rem;
+  }
+  .shopping-items li {
+    gap: 0.5rem;
+  }
+}
+
 /* Wedding event editing and the invited guest schedule */
 .event-workspace {
   width: min(100%, 1080px);
@@ -2499,6 +2765,34 @@ p {
     display: block;
   }
   .dashboard-sidebar {
+    display: block;
+    padding: 0.7rem 0.9rem;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .dashboard-sidebar .brand,
+  .dashboard-sidebar .sidebar-label {
+    display: none;
+  }
+  .dashboard-sidebar .sidebar-bottom {
+    margin-top: 0.45rem;
+  }
+  .dashboard-sidebar .sidebar-bottom .button {
+    padding: 0.4rem 0.7rem;
+    font-size: 0.75rem;
+  }
+  .dashboard-sidebar .sidebar-nav {
+    display: flex;
+    overflow-x: auto;
+    gap: 0.25rem;
+    scrollbar-width: thin;
+  }
+  .dashboard-sidebar .sidebar-nav a,
+  .dashboard-sidebar .sidebar-nav .nav-disabled {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+  .dashboard-sidebar .coming-soon {
     display: none;
   }
   .dashboard-main {

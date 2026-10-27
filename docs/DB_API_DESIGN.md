@@ -22,7 +22,7 @@ The database and API are designed to keep V1 simple, maintainable, and ready for
 
 - One active invitation per wedding in V1. 
 
-- Default shopping items are seeded when a wedding is created. 
+- Default shopping items are seeded on first member checklist access.
 
 - Gallery uses separate albums and photos collections. 
 
@@ -297,13 +297,14 @@ Page 4
 |category|String|Yes|BRIDE / GROOM / WEDDING|
 |title|String|Yes|Item name|
 |isDefault|Boolean|Yes|Seeded vs custom|
+|seedKey|String|null|Stable key for idempotent suggested items|
 |completed|Boolean|Yes|Checklist state|
 |sortOrder|Number|Yes|Display order|
 |deletedAt|Date|null|No|Soft delete|
 
 
 
-When a wedding is created, the service seeds a small set of default items. Custom items use isDefault=false. 
+The Shopping service seeds suggested items on first checklist access, including for weddings created before the feature. A per-wedding default seed key keeps this idempotent; soft-deleted suggestions stay deleted. Custom items use `isDefault=false`. Bride and Groom members share the same checklist and can edit or delete defaults. Shopping item APIs remain member-only.
 
 ## **12. catering Collection** 
 
@@ -603,7 +604,7 @@ Page 8
 }
 ```
 
-Creation flow also creates the creator's wedding_members record, default shopping items, a default invitation draft, and optional default gallery albums. 
+Creation flow also creates the creator's wedding_members record. Default shopping items are seeded on first member checklist access; invitation and gallery defaults follow their own module setup.
 
 ## **25. Event API** 
 

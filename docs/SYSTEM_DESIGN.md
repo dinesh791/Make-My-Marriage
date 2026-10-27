@@ -118,6 +118,8 @@ Each wedding receives a unique slug such as **/w/dinesh-usha** . Anyone with the
 
 The four predefined event cards can be saved as drafts. Members can also create custom events in the Wedding Events workspace. Creation defaults to a draft; the member may enable guest visibility immediately if a start date and time are supplied. Each card has Edit and Delete icon actions. Deleting either kind soft deletes its record; an unsaved predefined card gets a deletion marker so it stays hidden after reload. Published predefined or custom events require a start date and time and are included in the detailed wedding page and public events API only after the same attending-guest or member access check. Deleted events are excluded from both. The wedding's main date and countdown do not change when any event is edited or deleted.
 
+The couple dashboard keeps its sidebar mounted across Overview, Couple Details, Wedding Events, Invitation, and Shopping. The active destination is marked in navigation; upcoming features remain visible as unavailable. Shopping suggestions are seeded idempotently when a member first reads the checklist, and both members can manage all items. Guests cannot access Shopping APIs.
+
 ## **11. Invitation & Email** 
 
 Predefined invitation templates use the central wedding/event data. Sharing supports WhatsApp, copy link, and email. 

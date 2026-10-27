@@ -88,6 +88,8 @@ Sections: Home, Our Story, Events, Venue, Invitation, Gallery, and Live. Anyone 
 
 A simple checklist with Bride, Groom, and Wedding categories. Users can mark items as Pending or Completed and add custom items. There is no marketplace or payment system in V1. 
 
+New and existing weddings receive a small set of editable suggested items when the couple first opens Shopping. Both bride and groom can add, edit, complete, and delete suggested or custom items. Shopping is private to wedding members. The dashboard shows progress and opens the full checklist; the sidebar remains visible while navigating between dashboard workspaces.
+
 ## **10. Catering** 
 
 Basic catering information only: caterer name, contact information, food type, menu, breakfast, lunch, dinner, snacks, and special notes. No vendor marketplace, quotation, booking, or payment system in V1. 
