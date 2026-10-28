@@ -2,6 +2,7 @@
 // Only its uniquely named temporary account, session and wedding are removed.
 import assert from "node:assert/strict";
 import { randomBytes } from "node:crypto";
+import { DeleteObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import nextEnv from "@next/env";
 import mongoose from "mongoose";
 import { UserModel } from "../src/models/user.ts";
@@ -32,6 +33,7 @@ if (
 const email = `wedding-check-${randomBytes(12).toString("hex")}@example.invalid`;
 const password = randomBytes(24).toString("base64url");
 let step = "connect";
+const r2CleanupKeys = new Set();
 
 async function call(path, { method = "GET", body, cookie } = {}) {
   const headers = { origin: base.origin };
@@ -127,6 +129,83 @@ try {
     ).status,
     401,
   );
+  if (
+    ["R2_ACCOUNT_ID", "R2_BUCKET_NAME", "R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY"].every(
+      (key) => process.env[key],
+    )
+  ) {
+    const image = Buffer.from(
+      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=",
+      "base64",
+    );
+    step = "gallery upload initiation";
+    const initiated = await call(`/api/v1/weddings/${wedding.id}/photos/upload-init`, {
+      method: "POST",
+      cookie,
+      body: {
+        albumId: gallery.albums[0].id,
+        fileName: "local-gallery-check.png",
+        mimeType: "image/png",
+        sizeBytes: image.length,
+        caption: "Local gallery upload check",
+      },
+    });
+    assert.equal(initiated.status, 201);
+    const { photoId: uploadedPhotoId, uploadUrl } = (await initiated.json()).data;
+    const pending = await GalleryPhotoModel.findById(uploadedPhotoId).select("objectKey").lean();
+    assert.ok(pending);
+    r2CleanupKeys.add(pending.objectKey);
+    r2CleanupKeys.add(
+      `weddings/${wedding.id}/gallery/photos/${pending.objectKey.split("/").at(-1)}`,
+    );
+    step = "gallery signed PUT";
+    const uploaded = await fetch(uploadUrl, {
+      method: "PUT",
+      headers: { Origin: base.origin, "Content-Type": "image/png" },
+      body: image,
+    });
+    assert.equal(uploaded.status, 200);
+    step = "gallery upload completion";
+    const completed = await call(`/api/v1/weddings/${wedding.id}/photos/upload-complete`, {
+      method: "POST",
+      cookie,
+      body: { photoId: uploadedPhotoId },
+    });
+    assert.equal(completed.status, 200);
+    assert.equal((await completed.json()).data.photo.published, false);
+    step = "gallery anonymous draft read";
+    assert.equal((await call(`/api/v1/photos/${uploadedPhotoId}/file`)).status, 404);
+    step = "gallery member draft read";
+    const memberFile = await call(`/api/v1/photos/${uploadedPhotoId}/file`, { cookie });
+    if (memberFile.status !== 302) {
+      const failure = await memberFile.json();
+      console.error("Gallery member file response:", memberFile.status, failure.error?.code);
+    }
+    assert.equal(memberFile.status, 302);
+    assert.equal(memberFile.headers.get("cache-control"), "no-store, private");
+    const imageResponse = await fetch(memberFile.headers.get("location"));
+    assert.equal(imageResponse.status, 200);
+    assert.deepEqual(Buffer.from(await imageResponse.arrayBuffer()), image);
+    step = "gallery publish";
+    const published = await call(`/api/v1/photos/${uploadedPhotoId}`, {
+      method: "PATCH",
+      cookie,
+      body: { published: true },
+    });
+    assert.equal(published.status, 200);
+    step = "gallery published listing";
+    const publicGallery = await call(`/api/v1/public/weddings/${wedding.slug}/gallery`, {
+      cookie,
+    });
+    assert.equal(publicGallery.status, 200);
+    assert.equal((await publicGallery.json()).data.photos.length, 1);
+    step = "gallery delete";
+    assert.equal(
+      (await call(`/api/v1/photos/${uploadedPhotoId}`, { method: "DELETE", cookie })).status,
+      200,
+    );
+  }
+  step = "gallery albums and privacy";
   const galleryPage = await call("/dashboard/gallery", { cookie });
   assert.equal(galleryPage.status, 200);
   assert.match(await galleryPage.text(), /Photo Gallery/);
@@ -420,7 +499,7 @@ try {
   assert.equal(duplicate.status, 409);
   assert.equal((await call(`/api/v1/weddings/${wedding.id}`)).status, 401);
   console.log(
-    "PASS: local wedding, shopping checklist, gallery albums/privacy, events, membership, access control, and one active wedding rule.",
+    "PASS: local wedding, shopping checklist, gallery upload and privacy, events, membership, access control, and one active wedding rule.",
   );
 } catch {
   console.error(
@@ -451,6 +530,26 @@ try {
     } catch {
       console.error("Temporary local wedding cleanup failed; inspect wedding-check records.");
       process.exitCode = 1;
+    }
+  }
+  if (r2CleanupKeys.size) {
+    const client = new S3Client({
+      region: "auto",
+      endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+      credentials: {
+        accessKeyId: process.env.R2_ACCESS_KEY_ID,
+        secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
+      },
+    });
+    for (const key of r2CleanupKeys) {
+      try {
+        await client.send(
+          new DeleteObjectCommand({ Bucket: process.env.R2_BUCKET_NAME, Key: key }),
+        );
+      } catch {
+        console.error("Temporary R2 photo cleanup failed; inspect gallery-check objects.");
+        process.exitCode = 1;
+      }
     }
   }
   await mongoose.disconnect();

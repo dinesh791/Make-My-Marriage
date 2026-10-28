@@ -18,9 +18,14 @@ import {
 } from "./gallery.validators";
 
 function privateResponse(response: Response) {
-  response.headers.set("Cache-Control", "no-store, private");
-  response.headers.set("Vary", "Cookie");
-  return response;
+  const headers = new Headers(response.headers);
+  headers.set("Cache-Control", "no-store, private");
+  headers.set("Vary", "Cookie");
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
 }
 function failure(error: unknown) {
   if (error instanceof AppError)
