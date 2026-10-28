@@ -42,10 +42,12 @@ export default async function DashboardPage() {
     );
   }
   const wedding = toWeddingDto(savedWedding);
-  const partnerStatus = await getPartnerStatus(wedding.id, user.id);
-  const guestInvitations = await listGuestInvitations(wedding.id, user.id);
-  const events = await listMemberEvents(wedding.id, user.id);
-  const shoppingItems = await listMemberShoppingItems(wedding.id, user.id);
+  const [partnerStatus, guestInvitations, events, shoppingItems] = await Promise.all([
+    getPartnerStatus(wedding.id, user.id),
+    listGuestInvitations(wedding.id, user.id),
+    listMemberEvents(wedding.id, user.id),
+    listMemberShoppingItems(wedding.id, user.id),
+  ]);
   const completedShoppingItems = shoppingItems.filter((item) => item.completed).length;
   const scheduledEvents = events.filter((event) => event.enabled && event.startsAt);
   const requestTime = new Date();

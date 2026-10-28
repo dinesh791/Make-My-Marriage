@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { SidebarIcon } from "./sidebar-icon";
 
 export function SignOutButton() {
   const [pending, setPending] = useState(false);
@@ -22,8 +23,9 @@ export function SignOutButton() {
     }
   }
   return (
-    <div>
-      <button className="button button-outline" type="button" onClick={signOut} disabled={pending}>
+    <div className="sidebar-signout">
+      <button className="sidebar-signout-button" type="button" onClick={signOut} disabled={pending}>
+        <SidebarIcon name="signout" />
         {pending ? "Signing out…" : "Sign out"}
       </button>
       {error && (

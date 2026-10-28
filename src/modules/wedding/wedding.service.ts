@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { Types } from "mongoose";
 import { connectToDatabase } from "@/lib/db/mongoose";
 import { AppError } from "@/lib/http/errors";
@@ -20,11 +21,11 @@ function isDuplicateKey(error: unknown) {
   return typeof error === "object" && error !== null && "code" in error && error.code === 11000;
 }
 
-export async function getMyWedding(userId: string) {
+export const getMyWedding = cache(async (userId: string) => {
   await connectToDatabase();
   await repository.ensureWeddingStorage();
   return repository.findActiveWeddingForUser(userId);
-}
+});
 
 export async function getWeddingForMember(weddingId: string, userId: string) {
   if (!Types.ObjectId.isValid(weddingId)) {
