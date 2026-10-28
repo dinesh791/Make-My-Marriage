@@ -6,7 +6,7 @@ export const galleryPhotoSchema = new Schema(
     albumId: { type: Schema.Types.ObjectId, ref: "GalleryAlbum", required: true },
     objectKey: { type: String, required: true },
     originalName: { type: String, required: true, maxlength: 180 },
-    caption: { type: String, required: true, default: "", maxlength: 240 },
+    caption: { type: String, default: "", maxlength: 240 },
     mimeType: { type: String, required: true },
     sizeBytes: { type: Number, required: true },
     uploadedByType: { type: String, enum: ["USER", "GUEST"], required: true, default: "USER" },

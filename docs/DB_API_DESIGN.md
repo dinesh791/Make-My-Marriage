@@ -346,7 +346,7 @@ Recommended active-only partial unique index on { weddingId } where deletedAt is
 |albumId|ObjectId|Yes|Reference to albums|
 |objectKey|String|Yes|Cloudflare R2 object key|
 |originalName|String|Yes|Original file name for the couple|
-|caption|String|Yes|Optional display caption|
+|caption|String|No|Optional display caption; defaults to an empty string|
 |mimeType|String|Yes|Allowed image type|
 
 

@@ -147,7 +147,7 @@ try {
         fileName: "local-gallery-check.png",
         mimeType: "image/png",
         sizeBytes: image.length,
-        caption: "Local gallery upload check",
+        caption: "",
       },
     });
     assert.equal(initiated.status, 201);
