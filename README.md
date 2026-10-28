@@ -22,7 +22,7 @@ Use Node.js 22.17 or newer. The scaffold pages and health endpoint run without s
 
 Email/password registration, login, logout, and current-user lookup are implemented. A signed-in user can create one wedding, choose Bride/Groom, and edit its saved details. A partner can join through a private invitation link. The couple can email personal guest invitations, see attendance responses, and unlock the full wedding page for attending guests. Sending to relatives requires a verified Resend sender and a publicly reachable app URL; the local Resend test sender is limited to the account owner's inbox. Google sign-in and password recovery remain pending. The installed `next-auth` package is unused; session behavior and the future Google linking requirements are documented in [docs/AUTH_DESIGN.md](docs/AUTH_DESIGN.md).
 
-MongoDB automatic collection and index creation are disabled. Run the explicit setup command before using authentication or wedding features; it creates the declared auth, wedding, partner-invite, guest-invitation, event, invitation, and shopping collections and adds their indexes without seeding accounts or dropping existing data. Never commit secrets. Keep external integrations in `src/lib`, and enforce wedding membership in protected services.
+MongoDB automatic collection and index creation are disabled. Run the explicit setup command before using authentication or wedding features; it creates the declared auth, wedding, partner-invite, guest-invitation, event, invitation, shopping, album, and photo collections and adds their indexes without seeding accounts or dropping existing data. Never commit secrets. Keep external integrations in `src/lib`, and enforce wedding membership in protected services.
 
 1. Run `npm install`.
 2. Copy `.env.example` to `.env.local` if it does not already exist. Set `MONGODB_URI` with an explicit database name, a random `AUTH_SECRET` of at least 32 characters, and `NEXT_PUBLIC_APP_URL=http://localhost:3000`. Google/R2/Resend credentials are not required for email/password authentication.
@@ -51,7 +51,7 @@ MongoDB Compass is a viewer and editor for a database. The application also need
 
 1. Run `npm run db:local:start`. Repeat this after a reboot before starting the app. On Windows the script finds the installed `mongod.exe`; on other systems it uses `mongod` from PATH. You can set `MONGOD_BIN` if needed.
 2. Create Git-ignored `.env.development.local` containing `MONGODB_URI=mongodb://127.0.0.1:27018/makemymarriage_dev?replicaSet=mmm_local&directConnection=true`. Keep `AUTH_SECRET` and `NEXT_PUBLIC_APP_URL=http://localhost:3000` in `.env.local`. Development loads both files, with the local database URI taking precedence; the Atlas URI in `.env.local` is preserved.
-3. Run `npm run db:setup`. This creates `users`, `auth_sessions`, `auth_rate_limits`, `weddings`, `wedding_members`, `wedding_partner_invites`, `guest_invitations`, `events`, `invitations`, and `shopping_items` with their indexes. It does not create accounts or wedding records. Shopping suggestions are added when a member first opens the checklist.
+3. Run `npm run db:setup`. This creates `users`, `auth_sessions`, `auth_rate_limits`, `weddings`, `wedding_members`, `wedding_partner_invites`, `guest_invitations`, `events`, `invitations`, `shopping_items`, `albums`, and `photos` with their indexes. It does not create accounts or wedding records. Shopping suggestions and gallery albums are added when a member first opens each feature.
 4. Run `npm run dev`. Open `http://localhost:3000/register`, create an account, sign out, and sign in again. Then create a wedding in the dashboard. Google sign-in and password recovery are still pending.
 5. In Compass, connect with `mongodb://127.0.0.1:27018/makemymarriage_dev?replicaSet=mmm_local&directConnection=true` and open `makemymarriage_dev` to inspect the collections. Passwords are stored as hashes; sessions store token digests.
 6. With the app running, run `npm run test:auth:integration` and `npm run test:wedding:integration` for temporary end-to-end checks. The scripts first confirm the running app reads the configured development database, then remove their own test accounts and weddings. Restart the app after changing either environment file.
@@ -72,5 +72,28 @@ try { npm run db:setup } finally {
 ```
 
 The script adds missing collections and indexes without dropping records or copying local data. Confirm that its output includes `Ready: shopping_items` and `Database setup completed` before deploying the Shopping feature. In Atlas, the empty `shopping_items` collection appears in `makemymarriage_dev`; a signed-in bride or groom first opening Shopping creates the suggested items for that wedding.
+
+Before deploying the Gallery feature, rerun the same Atlas setup command and confirm `Ready: albums`, `Ready: photos`, and `Database setup completed`.
+
+## Set up private Cloudflare R2 photo storage
+
+1. In Cloudflare Dashboard, open **R2 Object Storage → Overview → Create bucket**. Give the bucket a unique name. Leave public access disabled.
+2. In **R2 → Overview → Manage API Tokens**, create a token with **Object Read & Write** limited to that bucket. Copy the account ID, access key ID, and secret access key. The secret is shown only when the token is created.
+3. Set `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, and `R2_BUCKET_NAME` in Git-ignored `.env.local`. `R2_PUBLIC_URL` is optional and is not used by this private gallery. Restart the development server. Add the same four secret variables to the Vercel project environment before deploying; redeploy after changes there. Do not share or commit their values.
+4. In the bucket **Settings → CORS policy**, permit browser uploads from the exact application origins. For the current local and production origins, use:
+
+```json
+[
+  {
+    "AllowedOrigins": ["http://localhost:3000", "https://make-my-marriage-lyart.vercel.app"],
+    "AllowedMethods": ["PUT"],
+    "AllowedHeaders": ["Content-Type"],
+    "ExposeHeaders": ["ETag"],
+    "MaxAgeSeconds": 3600
+  }
+]
+```
+
+If the application URL changes, update the matching CORS origin. The browser uploads directly to R2 through a five-minute signed URL. The server checks file size, content type, and image signature before saving a private draft. Only photos explicitly published by a bride or groom appear to attending guests; the bucket stays private. In bucket **Settings → Object Lifecycle Rules**, add a rule that deletes objects with prefix `gallery-staging/` after one day. This clears interrupted uploads without deleting finished photos.
 
 If login shows “We couldn't complete that request. Please try again shortly.” during local development, first run `npm run db:local:start` and retry. The website can run while MongoDB is stopped, but authentication requires the database. The project database does not start automatically after a reboot. If the response changes to “Email or password is incorrect,” check your credentials and confirm the account was registered in the local database rather than Atlas.

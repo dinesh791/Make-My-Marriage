@@ -10,6 +10,8 @@ import { GuestInvitationModel } from "../src/models/guest-invitation.ts";
 import { EventModel } from "../src/models/event.ts";
 import { InvitationModel } from "../src/models/invitation.ts";
 import { ShoppingItemModel } from "../src/models/shopping-item.ts";
+import { GalleryAlbumModel } from "../src/models/gallery-album.ts";
+import { GalleryPhotoModel } from "../src/models/gallery-photo.ts";
 
 nextEnv.loadEnvConfig(process.cwd(), process.env.NODE_ENV !== "production", {
   info() {},
@@ -45,6 +47,8 @@ try {
     EventModel,
     InvitationModel,
     ShoppingItemModel,
+    GalleryAlbumModel,
+    GalleryPhotoModel,
   ]) {
     phase = `creating the ${model.collection.collectionName} collection`;
     await model.createCollection();

@@ -11,6 +11,7 @@ import { SESSION_COOKIE_NAME } from "@/lib/auth/session";
 import { getCurrentUser } from "@/modules/auth/auth.service";
 import { listPublishedEvents } from "@/modules/event/event.service";
 import { getPublishedInvitation } from "@/modules/invitation/invitation.service";
+import { publishedGallery } from "@/modules/gallery/gallery.service";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -41,12 +42,16 @@ export default async function PublicWeddingPage({ params }: Props) {
   );
   const events = unlocked ? await listPublishedEvents(String(wedding._id)) : [];
   const invitation = unlocked ? await getPublishedInvitation(String(wedding._id)) : undefined;
+  const gallery = unlocked
+    ? await publishedGallery(String(wedding._id))
+    : { albums: [], photos: [] };
   return (
     <LiveWeddingSite
       wedding={toPublicWeddingDto(wedding)}
       unlocked={unlocked}
       events={events}
       invitation={invitation}
+      gallery={gallery}
     />
   );
 }

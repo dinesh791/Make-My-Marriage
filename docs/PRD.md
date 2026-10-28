@@ -98,6 +98,8 @@ Basic catering information only: caterer name, contact information, food type, m
 
 The couple can create albums such as Engagement, Nalangu, Muhurtham, Reception, Family, and Friends. Attending invited guests can upload photos after obtaining wedding detail access. The bride/groom can manage or remove uploaded photos.
 
+The first gallery release starts with bride/groom uploads of JPEG, PNG, and WebP images up to 25 MB each. Five suggested albums appear for new and existing weddings; the couple can add or rename albums, and delete empty albums. Each photo is a private draft until a member explicitly publishes it. Only published photos appear on the wedding website for attending guests or members. Guest uploads, HEIC/RAW, ZIP and cloud imports, QR uploads, and storage quotas follow later.
+
 ## **12. Wedding Livestream** 
 
 V1 keeps livestreaming simple. The couple can configure a livestream link and enable a Live section on the wedding website. Access should be private and limited through simple access information. The product will not build its own complex video-streaming infrastructure in V1. 

@@ -10,6 +10,8 @@ import { WeddingModel } from "../src/models/wedding.ts";
 import { WeddingMemberModel } from "../src/models/wedding-member.ts";
 import { EventModel } from "../src/models/event.ts";
 import { ShoppingItemModel } from "../src/models/shopping-item.ts";
+import { GalleryAlbumModel } from "../src/models/gallery-album.ts";
+import { GalleryPhotoModel } from "../src/models/gallery-photo.ts";
 import { verifyServerDatabase } from "./verify-server-database.mjs";
 
 nextEnv.loadEnvConfig(process.cwd(), true, { info() {}, error() {} });
@@ -76,6 +78,97 @@ try {
   assert.equal(created.status, 201);
   const { wedding } = (await created.json()).data;
   assert.equal(wedding.title, "Local Test Wedding");
+
+  step = "gallery albums and privacy";
+  const galleryPath = `/api/v1/weddings/${wedding.id}/albums`;
+  const galleryResponse = await call(galleryPath, { cookie });
+  assert.equal(galleryResponse.status, 200);
+  const gallery = (await galleryResponse.json()).data;
+  assert.equal(gallery.albums.length, 5);
+  assert.equal(gallery.photos.length, 0);
+  assert.equal((await call(galleryPath)).status, 401);
+  assert.equal((await call(`/api/v1/public/weddings/${wedding.slug}/gallery`)).status, 403);
+  assert.equal(
+    (await call(`/api/v1/public/weddings/${wedding.slug}/gallery`, { cookie })).status,
+    200,
+  );
+  const addedAlbumResponse = await call(galleryPath, {
+    method: "POST",
+    cookie,
+    body: { name: "Our friends" },
+  });
+  assert.equal(addedAlbumResponse.status, 201);
+  const addedAlbum = (await addedAlbumResponse.json()).data.album;
+  const editedAlbumResponse = await call(`/api/v1/albums/${addedAlbum.id}`, {
+    method: "PATCH",
+    cookie,
+    body: { name: "Friends" },
+  });
+  assert.equal(editedAlbumResponse.status, 200);
+  assert.equal((await editedAlbumResponse.json()).data.album.name, "Friends");
+  const removedAlbum = await call(`/api/v1/albums/${addedAlbum.id}`, { method: "DELETE", cookie });
+  assert.equal(removedAlbum.status, 200);
+  assert.equal((await call(galleryPath, { cookie })).status, 200);
+  assert.equal(
+    await GalleryAlbumModel.countDocuments({ weddingId: wedding.id, seedKey: { $ne: null } }),
+    5,
+  );
+  assert.equal(
+    (
+      await call(`/api/v1/weddings/${wedding.id}/photos/upload-init`, {
+        method: "POST",
+        body: {
+          albumId: gallery.albums[0].id,
+          fileName: "test.jpg",
+          mimeType: "image/jpeg",
+          sizeBytes: 100,
+        },
+      })
+    ).status,
+    401,
+  );
+  const galleryPage = await call("/dashboard/gallery", { cookie });
+  assert.equal(galleryPage.status, 200);
+  assert.match(await galleryPage.text(), /Photo Gallery/);
+  const testUser = await UserModel.findOne({ email }).select("_id").lean();
+  assert.ok(testUser);
+  const photoRecord = await GalleryPhotoModel.create({
+    weddingId: wedding.id,
+    albumId: gallery.albums[0].id,
+    objectKey: `weddings/${wedding.id}/gallery/photos/${randomBytes(8).toString("hex")}.jpg`,
+    originalName: "temporary.jpg",
+    caption: "Temporary gallery check",
+    mimeType: "image/jpeg",
+    sizeBytes: 100,
+    uploadedByUserId: testUser._id,
+    status: "DRAFT",
+  });
+  const photoId = String(photoRecord._id);
+  const publicGalleryPath = `/api/v1/public/weddings/${wedding.slug}/gallery`;
+  assert.equal((await (await call(publicGalleryPath, { cookie })).json()).data.photos.length, 0);
+  assert.equal((await (await call(galleryPath, { cookie })).json()).data.photos.length, 1);
+  assert.equal((await call(`/api/v1/photos/${photoId}/file`)).status, 404);
+  const publishedPhoto = await call(`/api/v1/photos/${photoId}`, {
+    method: "PATCH",
+    cookie,
+    body: { published: true },
+  });
+  assert.equal(publishedPhoto.status, 200);
+  assert.equal((await (await call(publicGalleryPath, { cookie })).json()).data.photos.length, 1);
+  assert.equal((await call(publicGalleryPath)).status, 403);
+  const memberWeddingPage = await call(`/w/${wedding.slug}`, { cookie });
+  assert.equal(memberWeddingPage.status, 200);
+  assert.match(await memberWeddingPage.text(), /Temporary gallery check/);
+  const lockedWeddingPage = await call(`/w/${wedding.slug}`);
+  assert.equal(lockedWeddingPage.status, 200);
+  assert.doesNotMatch(await lockedWeddingPage.text(), /Temporary gallery check/);
+  const unpublishedPhoto = await call(`/api/v1/photos/${photoId}`, {
+    method: "PATCH",
+    cookie,
+    body: { published: false },
+  });
+  assert.equal(unpublishedPhoto.status, 200);
+  assert.equal((await (await call(publicGalleryPath, { cookie })).json()).data.photos.length, 0);
 
   step = "shopping checklist";
   const shoppingPath = `/api/v1/weddings/${wedding.id}/shopping-items`;
@@ -327,7 +420,7 @@ try {
   assert.equal(duplicate.status, 409);
   assert.equal((await call(`/api/v1/weddings/${wedding.id}`)).status, 401);
   console.log(
-    "PASS: local wedding, shopping checklist, events, membership, access control, and one active wedding rule.",
+    "PASS: local wedding, shopping checklist, gallery albums/privacy, events, membership, access control, and one active wedding rule.",
   );
 } catch {
   console.error(
@@ -348,6 +441,8 @@ try {
         await WeddingMemberModel.deleteMany({ userId: user._id });
         await EventModel.deleteMany({ weddingId: { $in: weddingIds } });
         await ShoppingItemModel.deleteMany({ weddingId: { $in: weddingIds } });
+        await GalleryPhotoModel.deleteMany({ weddingId: { $in: weddingIds } });
+        await GalleryAlbumModel.deleteMany({ weddingId: { $in: weddingIds } });
         await WeddingModel.deleteMany({ _id: { $in: weddingIds } });
         await AuthSessionModel.deleteMany({ userId: user._id });
         await UserModel.deleteOne({ _id: user._id });

@@ -11,11 +11,11 @@ const pages = [
   { label: "Wedding events", icon: "E", href: "/dashboard/events" },
   { label: "Invitation", icon: "I", href: "/dashboard/invitation" },
   { label: "Shopping checklist", icon: "S", href: "/dashboard/shopping" },
+  { label: "Photo gallery", icon: "G", href: "/dashboard/gallery" },
 ];
 
 const plannedPages = [
   { label: "Catering", icon: "F" },
-  { label: "Photo gallery", icon: "G" },
   { label: "Livestream", icon: "L" },
 ];
 

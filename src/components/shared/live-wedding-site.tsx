@@ -5,17 +5,29 @@ import type { EventDto } from "@/modules/event/event.dto";
 import type { InvitationContent } from "@/modules/invitation/invitation.types";
 import { TraditionalTamilInvitation } from "./traditional-tamil-invitation";
 import { WeddingCountdown } from "./wedding-countdown";
+import { WeddingGallery } from "./wedding-gallery";
 
 export function LiveWeddingSite({
   wedding,
   unlocked,
   events,
   invitation,
+  gallery,
 }: {
   wedding: PublicWeddingDto;
   unlocked: boolean;
   events: EventDto[];
   invitation?: InvitationContent;
+  gallery: {
+    albums: { id: string; name: string }[];
+    photos: {
+      id: string;
+      albumId: string;
+      caption: string;
+      originalName: string;
+      imageUrl: string;
+    }[];
+  };
 }) {
   const homeHref = `/w/${wedding.slug}`;
   const coupleNames =
@@ -36,6 +48,7 @@ export function LiveWeddingSite({
             <a href="#home">Home</a>
             {unlocked && wedding.story && <a href="#our-story">Our Story</a>}
             {events.length > 0 && <a href="#wedding-events">Events</a>}
+            {gallery.photos.length > 0 && <a href="#gallery">Gallery</a>}
             <a href="#digital-invitation">Invitation</a>
             {unlocked && <a href="#venue">Venue</a>}
           </nav>
@@ -166,6 +179,8 @@ export function LiveWeddingSite({
           </div>
         </section>
       )}
+
+      {unlocked && <WeddingGallery albums={gallery.albums} photos={gallery.photos} />}
 
       <section className="wedding-section wedding-invitation-section" id="digital-invitation">
         <div className="wedding-content">

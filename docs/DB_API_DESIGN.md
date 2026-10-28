@@ -330,6 +330,7 @@ Recommended active-only partial unique index on { weddingId } where deletedAt is
 |_id|ObjectId|Yes|Primary key|
 |weddingId|ObjectId|Yes|Reference|
 |name|String|Yes|Album name|
+|seedKey|String|null|No|Stable key for suggested albums|
 |type|String|Yes|ENGAGEMENT / NALANGU / MUHURTHAM / RECEPTION / FAMILY /<br>FRIENDS / CUSTOM|
 |sortOrder|Number|Yes|Display order|
 |deletedAt|Date|null|No|Soft delete|
@@ -344,6 +345,8 @@ Recommended active-only partial unique index on { weddingId } where deletedAt is
 |weddingId|ObjectId|Yes|Reference|
 |albumId|ObjectId|Yes|Reference to albums|
 |objectKey|String|Yes|Cloudflare R2 object key|
+|originalName|String|Yes|Original file name for the couple|
+|caption|String|Yes|Optional display caption|
 |mimeType|String|Yes|Allowed image type|
 
 
@@ -359,7 +362,9 @@ Page 5
 |height|Number|null|No|Optional dimensions|
 |uploadedByType|String|Yes|USER / GUEST|
 |uploadedByUserId|ObjectId|null|No|Set for authenticated uploads|
-|status|String|Yes|ACTIVE / REJECTED|
+|status|String|Yes|PENDING / DRAFT / PUBLISHED in the first release|
+|uploadExpiresAt|Date|null|No|Expiry of pending upload ticket|
+|publishedAt|Date|null|No|Most recent publish time|
 |deletedAt|Date|null|No|Soft delete|
 
 
@@ -734,6 +739,8 @@ Page 10
 |POST|/api/v1/weddings/:weddingId/photos/upload-complete|Member/Guest|Finalize upload and metadata|
 |GET|/api/v1/weddings/:weddingId/albums/:albumId/photos|Member|List admin gallery|
 |DELETE|/api/v1/photos/:photoId|Member|Soft delete photo|
+|PATCH|/api/v1/photos/:photoId|Member|Edit caption/album or publish/unpublish|
+|GET|/api/v1/photos/:photoId/file|Authorized member or attending guest|Redirect to short-lived private R2 read URL|
 
 
 
@@ -746,6 +753,7 @@ Page 10
 |GET|/api/v1/public/weddings/:slug/invitation|Public|Public invitation data|
 |GET|/api/v1/public/weddings/:slug/albums|Public|Public albums|
 |GET|/api/v1/public/weddings/:slug/albums/:albumId/photos|Public|Public photos|
+|GET|/api/v1/public/weddings/:slug/gallery|Attending guest or member|Published albums and photos in the first release|
 |POST|/api/v1/public/weddings/:slug/photos/upload-init|Public|Guest upload ticket|
 |POST|/api/v1/public/weddings/:slug/photos/upload-complete|Public|Guest upload finalization|
 
@@ -754,6 +762,8 @@ Page 10
 Public endpoints return a basic teaser with the venue name but without the street address or map link until an attending guest token or active bride/groom membership is verified. The Dinesh & Usha sample remains public. Admin-only fields such as deletedAt, provider message IDs, storage-management metadata, and internal flags are excluded. Future events, gallery, and livestream endpoints must apply the same detail-access rule before serving protected content.
 
 Guest photo upload endpoints must require an attending invitation access check; a public slug alone is not enough to authorize uploads under the amended V1 policy.
+
+The first gallery release implements member uploads only. Its public gallery and photo-file routes enforce the attending guest/member detail gate, and unpublished photos are available only to members. Guest upload endpoints remain planned.
 
 ### **R2 upload flow** 
 

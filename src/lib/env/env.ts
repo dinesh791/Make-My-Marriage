@@ -16,7 +16,7 @@ const r2Schema = baseSchema.extend({
   R2_ACCESS_KEY_ID: z.string().min(1),
   R2_SECRET_ACCESS_KEY: z.string().min(1),
   R2_BUCKET_NAME: z.string().min(1),
-  R2_PUBLIC_URL: z.url(),
+  R2_PUBLIC_URL: z.url().optional().or(z.literal("")),
 });
 const emailSchema = baseSchema.extend({
   RESEND_API_KEY: z.string().min(1),

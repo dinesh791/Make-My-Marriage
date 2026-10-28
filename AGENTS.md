@@ -50,6 +50,9 @@ src/
     api/v1/weddings/.../events/     Member event listing, predefined event saving, and custom event creation/editing/deletion
     api/v1/weddings/.../shopping-items/  Member shopping checklist listing and creation
     api/v1/shopping-items/          Member item editing and deletion
+    api/v1/weddings/.../albums/     Member gallery listing and album creation
+    api/v1/weddings/.../photos/     Member photo upload initiation and completion
+    api/v1/photos/                 Member photo edits/deletion and gated media reads
     api/v1/wedding-partner-invites/ Partner invite acceptance
     api/v1/guest-invitations/     Guest RSVP response
     api/v1/public/weddings/         Public read endpoint for active wedding summaries
@@ -75,6 +78,7 @@ src/
   modules/wedding/                    Wedding controller, service, repository, validators, and DTO
   modules/event/                      Event controller, service, repository, validators, and DTO
   modules/shopping/                   Shared member checklist controller, service, repository, validators, and DTO
+  modules/gallery/                    Album/photo rules, private R2 upload flow, and gated reads
   modules/invitation/                 Draft/publish controller, service, repository, validators, and DTO
   modules/partner-invite/             One-time invite controller, service, and repository
   modules/guest-invitation/           Email delivery, RSVP, and detail-access rules
@@ -95,6 +99,7 @@ scripts/                             Local MongoDB startup, DB provisioning, aut
 - Keep a modular monolith; do not introduce microservices without a demonstrated need.
 - Keep API responses in the documented success/error envelope. Validate request data at API boundaries and centralize wedding-membership authorization.
 - Store media objects in R2 and their metadata/object keys in MongoDB. Never store R2 credentials in the database.
+- Keep gallery objects in a private R2 bucket. Member uploads are drafts until explicitly published; attending invited guests and members can view published photos. The first gallery release accepts JPEG, PNG, and WebP from bride/groom members; guest uploads follow later.
 - The public wedding design preview currently references Stitch-exported imagery from the narrowly scoped `lh3.googleusercontent.com/aida-public/**` path and renders those originals without server optimization. Move wedding/gallery media to R2 as the data-backed gallery workflow is implemented.
 - Use expiring, one-time partner-invite tokens and store token hashes. Mutable business records use soft deletion as specified in the DB/API design; email delivery history is audit-like.
 - Store timestamps in UTC and use `Asia/Kolkata` as the V1 wedding timezone. Keep secrets server-side.
