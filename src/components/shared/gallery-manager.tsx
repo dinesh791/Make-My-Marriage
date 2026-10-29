@@ -13,6 +13,7 @@ type Photo = {
   sizeBytes: number;
   createdAt: string | null;
   imageUrl: string;
+  uploadedByType?: "USER" | "GUEST";
 };
 type Gallery = { albums: Album[]; photos: Photo[] };
 type StagedPhoto = { file: File; albumId: string; caption: string };
@@ -284,6 +285,7 @@ export function GalleryManager({
                 <span className={photo.published ? "gallery-status published" : "gallery-status"}>
                   {photo.published ? "Published" : "Draft"}
                 </span>
+                {photo.uploadedByType === "GUEST" && <small>Guest submission</small>}
                 <h2>{photo.caption || photo.originalName}</h2>
                 <small>{gallery.albums.find((a) => a.id === photo.albumId)?.name ?? "Album"}</small>
                 <div className="gallery-card-actions">

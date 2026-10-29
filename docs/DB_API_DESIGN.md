@@ -754,8 +754,8 @@ Page 10
 |GET|/api/v1/public/weddings/:slug/albums|Public|Public albums|
 |GET|/api/v1/public/weddings/:slug/albums/:albumId/photos|Public|Public photos|
 |GET|/api/v1/public/weddings/:slug/gallery|Attending guest or member|Published albums and photos in the first release|
-|POST|/api/v1/public/weddings/:slug/photos/upload-init|Public|Guest upload ticket|
-|POST|/api/v1/public/weddings/:slug/photos/upload-complete|Public|Guest upload finalization|
+|POST|/api/v1/public/weddings/:slug/photos/upload-init|Attending invited guest|Create a short-lived private R2 upload URL|
+|POST|/api/v1/public/weddings/:slug/photos/upload-complete|Same attending guest|Validate and finalize a private draft|
 
 
 
@@ -763,7 +763,7 @@ Public endpoints return a basic teaser with the venue name but without the stree
 
 Guest photo upload endpoints must require an attending invitation access check; a public slug alone is not enough to authorize uploads under the amended V1 policy.
 
-The first gallery release implements member uploads only. Its public gallery and photo-file routes enforce the attending guest/member detail gate, and unpublished photos are available only to members. Guest upload endpoints remain planned.
+The gallery supports member and attending-guest uploads. Guest uploads are linked to the invitation that authorized them, limited per invitation, and finalized only by that same invitation. Photo type, size, and file signature are validated. Guest submissions remain private drafts until a bride or groom publishes them. The public gallery and photo-file routes enforce the attending guest/member detail gate, while unpublished photos are available only to members.
 
 ### **R2 upload flow** 
 

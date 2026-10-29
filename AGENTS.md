@@ -99,7 +99,7 @@ scripts/                             Local MongoDB startup, DB provisioning, aut
 - Keep a modular monolith; do not introduce microservices without a demonstrated need.
 - Keep API responses in the documented success/error envelope. Validate request data at API boundaries and centralize wedding-membership authorization.
 - Store media objects in R2 and their metadata/object keys in MongoDB. Never store R2 credentials in the database.
-- Keep gallery objects in a private R2 bucket. Member uploads are drafts until explicitly published; attending invited guests and members can view published photos. The first gallery release accepts JPEG, PNG, and WebP from bride/groom members; guest uploads follow later.
+- Keep gallery objects in a private R2 bucket. Bride/groom members and attending invited guests can upload JPEG, PNG, and WebP photos. Every upload remains a draft until a member publishes it; only members can view drafts, and attending guests and members can view published photos. Guest uploads require an attending invitation and are bound to that invitation for finalization.
 - The public wedding design preview currently references Stitch-exported imagery from the narrowly scoped `lh3.googleusercontent.com/aida-public/**` path and renders those originals without server optimization. Move wedding/gallery media to R2 as the data-backed gallery workflow is implemented.
 - Use expiring, one-time partner-invite tokens and store token hashes. Mutable business records use soft deletion as specified in the DB/API design; email delivery history is audit-like.
 - Store timestamps in UTC and use `Asia/Kolkata` as the V1 wedding timezone. Keep secrets server-side.

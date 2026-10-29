@@ -10,7 +10,12 @@ export const galleryPhotoSchema = new Schema(
     mimeType: { type: String, required: true },
     sizeBytes: { type: Number, required: true },
     uploadedByType: { type: String, enum: ["USER", "GUEST"], required: true, default: "USER" },
-    uploadedByUserId: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    uploadedByUserId: { type: Schema.Types.ObjectId, ref: "User", default: null },
+    uploadedByGuestInvitationId: {
+      type: Schema.Types.ObjectId,
+      ref: "GuestInvitation",
+      default: null,
+    },
     status: { type: String, enum: ["PENDING", "DRAFT", "PUBLISHED"], required: true },
     uploadExpiresAt: { type: Date, default: null },
     publishedAt: { type: Date, default: null },

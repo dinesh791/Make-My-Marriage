@@ -98,7 +98,7 @@ Basic catering information only: caterer name, contact information, food type, m
 
 The couple can create albums such as Engagement, Nalangu, Muhurtham, Reception, Family, and Friends. Attending invited guests can upload photos after obtaining wedding detail access. The bride/groom can manage or remove uploaded photos.
 
-The first gallery release starts with bride/groom uploads of JPEG, PNG, and WebP images up to 25 MB each. Five suggested albums appear for new and existing weddings; the couple can add or rename albums, and delete empty albums. Each photo is a private draft until a member explicitly publishes it. Only published photos appear on the wedding website for attending guests or members. Guest uploads, HEIC/RAW, ZIP and cloud imports, QR uploads, and storage quotas follow later.
+The gallery accepts JPEG, PNG, and WebP images up to 25 MB each. Five suggested albums appear for new and existing weddings; the couple can add or rename albums, and delete empty albums. Bride/groom members upload from the dashboard. Attending invited guests can submit one photo at a time from the wedding website without creating an account. Every photo, including a guest submission, remains a private draft until a member explicitly publishes it. Only published photos appear on the wedding website for attending guests or members. HEIC/RAW, ZIP and cloud imports, QR uploads, and storage quotas follow later.
 
 ## **12. Wedding Livestream** 
 

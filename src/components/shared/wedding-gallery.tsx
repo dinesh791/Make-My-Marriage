@@ -2,6 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element */
 import { useState } from "react";
+import { GuestPhotoUpload } from "./guest-photo-upload";
 
 type Album = { id: string; name: string };
 type Photo = {
@@ -12,38 +13,58 @@ type Photo = {
   imageUrl: string;
 };
 
-export function WeddingGallery({ albums, photos }: { albums: Album[]; photos: Photo[] }) {
+export function WeddingGallery({
+  albums,
+  photos,
+  slug,
+  uploadAlbums,
+  canUpload,
+}: {
+  albums: Album[];
+  photos: Photo[];
+  slug: string;
+  uploadAlbums: Album[];
+  canUpload: boolean;
+}) {
   const [albumId, setAlbumId] = useState("all");
   const [selected, setSelected] = useState<Photo | null>(null);
   const visible = albumId === "all" ? photos : photos.filter((photo) => photo.albumId === albumId);
-  if (!photos.length) return null;
+  if (!photos.length && !canUpload) return null;
   return (
     <section className="wedding-section live-gallery-section" id="gallery">
       <div className="wedding-content">
         <div className="wedding-section-heading">
           <span className="wedding-eyebrow">✦ Cherished moments ✦</span>
           <h2 className="wedding-serif">Photo Gallery</h2>
-          <p>Memories shared by the couple.</p>
+          <p>Memories shared by the couple and guests.</p>
         </div>
-        <div className="gallery-tabs" role="group" aria-label="Filter photos">
-          <button
-            className={albumId === "all" ? "selected" : ""}
-            type="button"
-            onClick={() => setAlbumId("all")}
-          >
-            All photos
-          </button>
-          {albums.map((album) => (
+        {canUpload && <GuestPhotoUpload slug={slug} albums={uploadAlbums} />}
+        {photos.length > 0 && (
+          <div className="gallery-tabs" role="group" aria-label="Filter photos">
             <button
-              key={album.id}
-              className={albumId === album.id ? "selected" : ""}
+              className={albumId === "all" ? "selected" : ""}
               type="button"
-              onClick={() => setAlbumId(album.id)}
+              onClick={() => setAlbumId("all")}
             >
-              {album.name}
+              All photos
             </button>
-          ))}
-        </div>
+            {albums.map((album) => (
+              <button
+                key={album.id}
+                className={albumId === album.id ? "selected" : ""}
+                type="button"
+                onClick={() => setAlbumId(album.id)}
+              >
+                {album.name}
+              </button>
+            ))}
+          </div>
+        )}
+        {!photos.length && (
+          <p className="guest-gallery-empty">
+            No photos published yet. You can share the first memory with the couple.
+          </p>
+        )}
         <div className="live-gallery-grid">
           {visible.map((photo) => (
             <button

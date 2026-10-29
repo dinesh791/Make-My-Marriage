@@ -13,8 +13,10 @@ import { connectToDatabase } from "@/lib/db/mongoose";
 import { getR2BucketName, getR2Client } from "@/lib/r2/client";
 import { AppError } from "@/lib/http/errors";
 import { enforceAuthLimit } from "@/modules/auth/auth.service";
+import { getAttendingGuestInvitation } from "@/modules/guest-invitation/guest-invitation.service";
 import { getWeddingForMember } from "@/modules/wedding/wedding.service";
 import * as repo from "./gallery.repository";
+import type { UploadActor } from "./gallery.repository";
 import type { UploadInitInput, UpdatePhotoInput } from "./gallery.validators";
 
 const isId = (value: string) => /^[0-9a-f]{24}$/i.test(value);
@@ -65,7 +67,10 @@ export async function memberGallery(weddingId: string, userId: string) {
     repo.listAlbums(weddingId),
     repo.listPhotos(weddingId),
   ]);
-  return { albums: albums.map(albumDto), photos: photos.map(photoDto) };
+  return {
+    albums: albums.map(albumDto),
+    photos: photos.map((photo) => ({ ...photoDto(photo), uploadedByType: photo.uploadedByType })),
+  };
 }
 
 export async function publishedGallery(weddingId: string) {
@@ -79,6 +84,17 @@ export async function publishedGallery(weddingId: string) {
     albums: albums.filter((album) => used.has(String(album._id))).map(albumDto),
     photos: photos.map(photoDto),
   };
+}
+
+export async function guestUploadAlbums(weddingId: string) {
+  await connectToDatabase();
+  await repo.ensureGalleryStorage();
+  let albums = await repo.listAlbums(weddingId);
+  if (!albums.length) {
+    await repo.seedAlbums(weddingId);
+    albums = await repo.listAlbums(weddingId);
+  }
+  return albums.map(albumDto);
 }
 
 export async function createAlbum(weddingId: string, userId: string, name: string) {
@@ -111,11 +127,15 @@ export async function deleteAlbum(albumId: string, userId: string) {
   await repo.deleteAlbumRecord(albumId);
 }
 
-export async function startUpload(weddingId: string, userId: string, input: UploadInitInput) {
-  await memberReady(weddingId, userId);
+async function startUploadForActor(weddingId: string, actor: UploadActor, input: UploadInitInput) {
   if (!isId(input.albumId) || !(await repo.findAlbum(weddingId, input.albumId)))
     throw albumMissing();
-  await enforceAuthLimit(`gallery-upload:${userId}`, 40, 60 * 60 * 1000);
+  if (actor.type === "USER") {
+    await enforceAuthLimit(`gallery-upload:${actor.id}`, 40, 60 * 60 * 1000);
+  } else {
+    await enforceAuthLimit(`gallery-guest-upload:${actor.id}`, 10, 60 * 60 * 1000);
+    await enforceAuthLimit(`gallery-guest-upload-day:${actor.id}`, 20, 24 * 60 * 60 * 1000);
+  }
   const { client, bucket } = storage();
   const extension = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" }[
     input.mimeType
@@ -130,7 +150,10 @@ export async function startUpload(weddingId: string, userId: string, input: Uplo
     caption: input.caption,
     mimeType: input.mimeType,
     sizeBytes: input.sizeBytes,
-    uploadedByUserId: userId,
+    uploadedByType: actor.type,
+    ...(actor.type === "USER"
+      ? { uploadedByUserId: actor.id }
+      : { uploadedByGuestInvitationId: actor.id }),
     uploadExpiresAt: expiresAt,
   });
   const uploadUrl = await getSignedUrl(
@@ -146,6 +169,28 @@ export async function startUpload(weddingId: string, userId: string, input: Uplo
   };
 }
 
+export async function startUpload(weddingId: string, userId: string, input: UploadInitInput) {
+  await memberReady(weddingId, userId);
+  return startUploadForActor(weddingId, { type: "USER", id: userId }, input);
+}
+
+async function guestActor(weddingId: string, guestToken?: string): Promise<UploadActor> {
+  const invitation = await getAttendingGuestInvitation(weddingId, guestToken);
+  if (!invitation)
+    throw new AppError("GALLERY_ACCESS_REQUIRED", "Confirm your attendance to add photos.", 403);
+  await connectToDatabase();
+  await repo.ensureGalleryStorage();
+  return { type: "GUEST", id: invitation.id };
+}
+
+export async function startGuestUpload(
+  weddingId: string,
+  guestToken: string | undefined,
+  input: UploadInitInput,
+) {
+  return startUploadForActor(weddingId, await guestActor(weddingId, guestToken), input);
+}
+
 function validMagic(mimeType: string, bytes: Uint8Array) {
   if (mimeType === "image/jpeg") return bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff;
   if (mimeType === "image/png")
@@ -157,10 +202,9 @@ function validMagic(mimeType: string, bytes: Uint8Array) {
   );
 }
 
-export async function finishUpload(weddingId: string, userId: string, photoId: string) {
-  await memberReady(weddingId, userId);
+async function finishUploadForActor(weddingId: string, actor: UploadActor, photoId: string) {
   if (!isId(photoId)) throw photoMissing();
-  const photo = await repo.findPendingPhoto(photoId, weddingId, userId);
+  const photo = await repo.findPendingPhoto(photoId, weddingId, actor);
   if (!photo) throw photoMissing();
   if (!photo.uploadExpiresAt || photo.uploadExpiresAt < new Date())
     throw new AppError(
@@ -196,7 +240,7 @@ export async function finishUpload(weddingId: string, userId: string, photoId: s
       CopySource: `${bucket}/${photo.objectKey}`,
     }),
   );
-  const completed = await repo.finalizePendingPhoto(photoId, finalKey);
+  const completed = await repo.finalizePendingPhoto(photoId, finalKey, actor);
   if (!completed) throw photoMissing();
   try {
     await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: photo.objectKey }));
@@ -204,6 +248,19 @@ export async function finishUpload(weddingId: string, userId: string, photoId: s
     // The private staging copy can be removed by the bucket's lifecycle rule.
   }
   return photoDto(completed);
+}
+
+export async function finishUpload(weddingId: string, userId: string, photoId: string) {
+  await memberReady(weddingId, userId);
+  return finishUploadForActor(weddingId, { type: "USER", id: userId }, photoId);
+}
+
+export async function finishGuestUpload(
+  weddingId: string,
+  guestToken: string | undefined,
+  photoId: string,
+) {
+  return finishUploadForActor(weddingId, await guestActor(weddingId, guestToken), photoId);
 }
 
 export async function updatePhoto(photoId: string, userId: string, input: UpdatePhotoInput) {

@@ -90,20 +90,34 @@ export const createPendingPhoto = (input: {
   caption: string;
   mimeType: string;
   sizeBytes: number;
-  uploadedByUserId: string;
+  uploadedByType: "USER" | "GUEST";
+  uploadedByUserId?: string;
+  uploadedByGuestInvitationId?: string;
   uploadExpiresAt: Date;
 }) => GalleryPhotoModel.create({ ...input, status: "PENDING" });
-export const findPendingPhoto = (photoId: string, weddingId: string, userId: string) =>
+export type UploadActor = { type: "USER" | "GUEST"; id: string };
+const actorFilter = (
+  actor: UploadActor,
+):
+  | { uploadedByType: "USER"; uploadedByUserId: string }
+  | {
+      uploadedByType: "GUEST";
+      uploadedByGuestInvitationId: string;
+    } =>
+  actor.type === "USER"
+    ? { uploadedByType: "USER", uploadedByUserId: actor.id }
+    : { uploadedByType: "GUEST", uploadedByGuestInvitationId: actor.id };
+export const findPendingPhoto = (photoId: string, weddingId: string, actor: UploadActor) =>
   GalleryPhotoModel.findOne({
     _id: photoId,
     weddingId,
-    uploadedByUserId: userId,
+    ...actorFilter(actor),
     deletedAt: null,
     status: "PENDING",
   }).lean();
-export const finalizePendingPhoto = (photoId: string, objectKey: string) =>
+export const finalizePendingPhoto = (photoId: string, objectKey: string, actor: UploadActor) =>
   GalleryPhotoModel.findOneAndUpdate(
-    { _id: photoId, status: "PENDING", deletedAt: null },
+    { _id: photoId, status: "PENDING", deletedAt: null, ...actorFilter(actor) },
     { $set: { objectKey, status: "DRAFT", uploadExpiresAt: null } },
     { new: true },
   ).lean();

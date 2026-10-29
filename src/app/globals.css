@@ -770,6 +770,23 @@
   padding: 0.7rem;
   color: var(--ink);
 }
+.guest-upload-button {
+  display: inline-block;
+  margin: 0 auto 1.5rem;
+}
+.guest-upload-message,
+.guest-gallery-empty {
+  margin: 0 auto 1.5rem;
+  text-align: center;
+}
+.guest-upload-preview {
+  display: block;
+  width: 100%;
+  max-height: 220px;
+  object-fit: contain;
+  border-radius: 6px;
+  background: #f7f0ed;
+}
 @media (max-width: 640px) {
   .gallery-heading {
     align-items: stretch;

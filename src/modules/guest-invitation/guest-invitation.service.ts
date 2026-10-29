@@ -189,15 +189,20 @@ export async function canViewWeddingDetails(
   await ready();
   if (userId && (await WeddingMemberModel.exists({ weddingId, userId, status: "ACTIVE" })))
     return true;
-  if (!guestToken || !TOKEN_PATTERN.test(guestToken)) return false;
+  return Boolean(await getAttendingGuestInvitation(weddingId, guestToken));
+}
+
+export async function getAttendingGuestInvitation(weddingId: string, guestToken?: string) {
+  if (!guestToken || !TOKEN_PATTERN.test(guestToken)) return null;
+  await ready();
   const invitation = await repository.findByTokenHash(tokenHash(guestToken));
-  return Boolean(
-    invitation &&
+  return invitation &&
     String(invitation.weddingId) === weddingId &&
     invitation.sendStatus === "SENT" &&
     invitation.response === "ATTENDING" &&
-    invitation.expiresAt > new Date(),
-  );
+    invitation.expiresAt > new Date()
+    ? { id: String(invitation._id) }
+    : null;
 }
 
 export function emailDeliveryConfigured() {

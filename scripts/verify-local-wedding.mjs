@@ -1,7 +1,7 @@
 // Checks the saved wedding flow against the local development replica set.
 // Only its uniquely named temporary account, session and wedding are removed.
 import assert from "node:assert/strict";
-import { randomBytes } from "node:crypto";
+import { createHmac, randomBytes } from "node:crypto";
 import { DeleteObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import nextEnv from "@next/env";
 import mongoose from "mongoose";
@@ -13,6 +13,7 @@ import { EventModel } from "../src/models/event.ts";
 import { ShoppingItemModel } from "../src/models/shopping-item.ts";
 import { GalleryAlbumModel } from "../src/models/gallery-album.ts";
 import { GalleryPhotoModel } from "../src/models/gallery-photo.ts";
+import { GuestInvitationModel } from "../src/models/guest-invitation.ts";
 import { verifyServerDatabase } from "./verify-server-database.mjs";
 
 nextEnv.loadEnvConfig(process.cwd(), true, { info() {}, error() {} });
@@ -129,6 +130,47 @@ try {
     ).status,
     401,
   );
+  const guestToken = randomBytes(32).toString("base64url");
+  const guestCookie = `mmm_guest_${wedding.id}=${guestToken}`;
+  const guestInvite = await GuestInvitationModel.create({
+    weddingId: wedding.id,
+    recipientEmail: `gallery-${randomBytes(8).toString("hex")}@example.invalid`,
+    tokenHash: createHmac("sha256", process.env.AUTH_SECRET)
+      .update(`guest-invitation:${guestToken}`)
+      .digest("hex"),
+    expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+    sendStatus: "SENT",
+    response: "ATTENDING",
+  });
+  const otherGuestToken = randomBytes(32).toString("base64url");
+  const otherGuestCookie = `mmm_guest_${wedding.id}=${otherGuestToken}`;
+  await GuestInvitationModel.create({
+    weddingId: wedding.id,
+    recipientEmail: `gallery-${randomBytes(8).toString("hex")}@example.invalid`,
+    tokenHash: createHmac("sha256", process.env.AUTH_SECRET)
+      .update(`guest-invitation:${otherGuestToken}`)
+      .digest("hex"),
+    expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+    sendStatus: "SENT",
+    response: "ATTENDING",
+  });
+  const guestUploadPath = `/api/v1/public/weddings/${wedding.slug}/photos`;
+  const guestPublicGalleryPath = `/api/v1/public/weddings/${wedding.slug}/gallery`;
+  const guestUploadInput = {
+    albumId: gallery.albums[0].id,
+    fileName: "guest-photo.png",
+    mimeType: "image/png",
+    sizeBytes: 68,
+    caption: "",
+  };
+  assert.equal(
+    (await call(`${guestUploadPath}/upload-init`, { method: "POST", body: guestUploadInput }))
+      .status,
+    403,
+  );
+  const guestWeddingPage = await call(`/w/${wedding.slug}`, { cookie: guestCookie });
+  assert.equal(guestWeddingPage.status, 200);
+  assert.match(await guestWeddingPage.text(), /Share a photo/);
   if (
     ["R2_ACCOUNT_ID", "R2_BUCKET_NAME", "R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY"].every(
       (key) => process.env[key],
@@ -164,6 +206,7 @@ try {
       headers: { Origin: base.origin, "Content-Type": "image/png" },
       body: image,
     });
+    if (uploaded.status !== 200) console.error("R2 signed PUT status:", uploaded.status);
     assert.equal(uploaded.status, 200);
     step = "gallery upload completion";
     const completed = await call(`/api/v1/weddings/${wedding.id}/photos/upload-complete`, {
@@ -202,6 +245,101 @@ try {
     step = "gallery delete";
     assert.equal(
       (await call(`/api/v1/photos/${uploadedPhotoId}`, { method: "DELETE", cookie })).status,
+      200,
+    );
+    step = "guest gallery upload and approval";
+    const guestInit = await call(`${guestUploadPath}/upload-init`, {
+      method: "POST",
+      cookie: guestCookie,
+      body: { ...guestUploadInput, sizeBytes: image.length },
+    });
+    assert.equal(guestInit.status, 201);
+    const { photoId: guestPhotoId, uploadUrl: guestUploadUrl } = (await guestInit.json()).data;
+    const pendingGuest = await GalleryPhotoModel.findById(guestPhotoId).lean();
+    assert.equal(pendingGuest.uploadedByType, "GUEST");
+    assert.equal(String(pendingGuest.uploadedByGuestInvitationId), String(guestInvite._id));
+    r2CleanupKeys.add(pendingGuest.objectKey);
+    r2CleanupKeys.add(
+      `weddings/${wedding.id}/gallery/photos/${pendingGuest.objectKey.split("/").at(-1)}`,
+    );
+    assert.equal(
+      (
+        await fetch(guestUploadUrl, {
+          method: "PUT",
+          headers: { Origin: base.origin, "Content-Type": "image/png" },
+          body: image,
+        })
+      ).status,
+      200,
+    );
+    assert.equal(
+      (
+        await call(`${guestUploadPath}/upload-complete`, {
+          method: "POST",
+          body: { photoId: guestPhotoId },
+        })
+      ).status,
+      403,
+    );
+    assert.equal(
+      (
+        await call(`${guestUploadPath}/upload-complete`, {
+          method: "POST",
+          cookie: otherGuestCookie,
+          body: { photoId: guestPhotoId },
+        })
+      ).status,
+      404,
+    );
+    const guestComplete = await call(`${guestUploadPath}/upload-complete`, {
+      method: "POST",
+      cookie: guestCookie,
+      body: { photoId: guestPhotoId },
+    });
+    assert.equal(guestComplete.status, 200);
+    assert.equal((await guestComplete.json()).data.photo.published, false);
+    assert.equal(
+      (await call(`/api/v1/photos/${guestPhotoId}/file`, { cookie: guestCookie })).status,
+      404,
+    );
+    assert.equal(
+      (await (await call(guestPublicGalleryPath, { cookie: guestCookie })).json()).data.photos
+        .length,
+      0,
+    );
+    const memberGuestGallery = (await (await call(galleryPath, { cookie })).json()).data;
+    assert.equal(memberGuestGallery.photos[0].uploadedByType, "GUEST");
+    assert.equal(
+      (
+        await call(`/api/v1/photos/${guestPhotoId}`, {
+          method: "PATCH",
+          cookie: guestCookie,
+          body: { published: true },
+        })
+      ).status,
+      401,
+    );
+    assert.equal(
+      (
+        await call(`/api/v1/photos/${guestPhotoId}`, {
+          method: "PATCH",
+          cookie,
+          body: { published: true },
+        })
+      ).status,
+      200,
+    );
+    assert.equal(
+      (await (await call(guestPublicGalleryPath, { cookie: guestCookie })).json()).data.photos
+        .length,
+      1,
+    );
+    assert.equal(
+      (await call(`/api/v1/photos/${guestPhotoId}/file`, { cookie: guestCookie })).status,
+      302,
+    );
+    assert.equal(
+      (await call(`/api/v1/photos/${guestPhotoId}`, { method: "DELETE", cookie })).status,
       200,
     );
   }
@@ -501,10 +639,10 @@ try {
   console.log(
     "PASS: local wedding, shopping checklist, gallery upload and privacy, events, membership, access control, and one active wedding rule.",
   );
-} catch {
+} catch (error) {
   console.error(
     step === "server database identity"
-      ? "FAIL: start or restart the local app so it uses the same configured development database."
+      ? `FAIL: start or restart the local app so it uses the same configured development database.${error instanceof assert.AssertionError ? ` ${error.message}` : ""}`
       : `FAIL at ${step}. Sensitive diagnostics suppressed.`,
   );
   process.exitCode = 1;
@@ -521,6 +659,7 @@ try {
         await EventModel.deleteMany({ weddingId: { $in: weddingIds } });
         await ShoppingItemModel.deleteMany({ weddingId: { $in: weddingIds } });
         await GalleryPhotoModel.deleteMany({ weddingId: { $in: weddingIds } });
+        await GuestInvitationModel.deleteMany({ weddingId: { $in: weddingIds } });
         await GalleryAlbumModel.deleteMany({ weddingId: { $in: weddingIds } });
         await WeddingModel.deleteMany({ _id: { $in: weddingIds } });
         await AuthSessionModel.deleteMany({ userId: user._id });
@@ -546,8 +685,8 @@ try {
         await client.send(
           new DeleteObjectCommand({ Bucket: process.env.R2_BUCKET_NAME, Key: key }),
         );
-      } catch {
-        console.error("Temporary R2 photo cleanup failed; inspect gallery-check objects.");
+      } catch (error) {
+        console.error("Temporary R2 photo cleanup failed:", error?.name ?? "unknown error");
         process.exitCode = 1;
       }
     }

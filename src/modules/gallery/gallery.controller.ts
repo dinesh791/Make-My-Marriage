@@ -95,6 +95,30 @@ export const completeUpload = (request: NextRequest, weddingId: string) =>
     return successResponse({ photo: await gallery.finishUpload(weddingId, user, photoId) });
   });
 
+export const initiateGuestUpload = (request: NextRequest, slug: string) =>
+  run(async () => {
+    requireSameOrigin(request);
+    const wedding = await getPublicWeddingBySlug(slug);
+    if (!wedding) throw new AppError("WEDDING_NOT_FOUND", "Wedding not found.", 404);
+    const weddingId = String(wedding._id);
+    const input = await readAuthJson(request, uploadInitSchema);
+    const guestToken = request.cookies.get(guestAccessCookieName(weddingId))?.value;
+    return successResponse(await gallery.startGuestUpload(weddingId, guestToken, input), null, 201);
+  });
+
+export const completeGuestUpload = (request: NextRequest, slug: string) =>
+  run(async () => {
+    requireSameOrigin(request);
+    const wedding = await getPublicWeddingBySlug(slug);
+    if (!wedding) throw new AppError("WEDDING_NOT_FOUND", "Wedding not found.", 404);
+    const weddingId = String(wedding._id);
+    const { photoId } = await readAuthJson(request, uploadCompleteSchema);
+    const guestToken = request.cookies.get(guestAccessCookieName(weddingId))?.value;
+    return successResponse({
+      photo: await gallery.finishGuestUpload(weddingId, guestToken, photoId),
+    });
+  });
+
 export const editPhoto = (request: NextRequest, photoId: string) =>
   run(async () => {
     requireSameOrigin(request);

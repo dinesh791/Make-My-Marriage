@@ -13,6 +13,8 @@ export function LiveWeddingSite({
   events,
   invitation,
   gallery,
+  guestUploadAlbums,
+  canGuestUpload,
 }: {
   wedding: PublicWeddingDto;
   unlocked: boolean;
@@ -28,6 +30,8 @@ export function LiveWeddingSite({
       imageUrl: string;
     }[];
   };
+  guestUploadAlbums: { id: string; name: string }[];
+  canGuestUpload: boolean;
 }) {
   const homeHref = `/w/${wedding.slug}`;
   const coupleNames =
@@ -48,7 +52,7 @@ export function LiveWeddingSite({
             <a href="#home">Home</a>
             {unlocked && wedding.story && <a href="#our-story">Our Story</a>}
             {events.length > 0 && <a href="#wedding-events">Events</a>}
-            {gallery.photos.length > 0 && <a href="#gallery">Gallery</a>}
+            {(gallery.photos.length > 0 || canGuestUpload) && <a href="#gallery">Gallery</a>}
             <a href="#digital-invitation">Invitation</a>
             {unlocked && <a href="#venue">Venue</a>}
           </nav>
@@ -180,7 +184,15 @@ export function LiveWeddingSite({
         </section>
       )}
 
-      {unlocked && <WeddingGallery albums={gallery.albums} photos={gallery.photos} />}
+      {unlocked && (
+        <WeddingGallery
+          albums={gallery.albums}
+          photos={gallery.photos}
+          slug={wedding.slug}
+          uploadAlbums={guestUploadAlbums}
+          canUpload={canGuestUpload}
+        />
+      )}
 
       <section className="wedding-section wedding-invitation-section" id="digital-invitation">
         <div className="wedding-content">
