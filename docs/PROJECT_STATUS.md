@@ -1,6 +1,6 @@
 # Make My Marriage — Project Status
 
-Last reviewed: 2026-10-29
+Last reviewed: 2026-10-31
 
 This is the living progress tracker for the project. `AGENTS.md` contains persistent project and implementation guidance. The confirmed V1 requirements and design are in `PRD.md`, `SYSTEM_DESIGN.md`, and `DB_API_DESIGN.md` in this folder.
 
@@ -11,6 +11,12 @@ This is the living progress tracker for the project. `AGENTS.md` contains persis
 - Wedding creation, membership persistence, detail editing, and partner invitations are implemented in source. A member can create a private, seven-day link for the opposite role; a signed-in recipient can join the same wedding once.
 - Treat the Dinesh & Usha preview as illustrative. Saved wedding details and checklist progress on the dashboard come from MongoDB. Live pages show current wedding information, an invitation, story when provided, venue, countdown, and enabled wedding events to attending guests or members; gallery draft/upload and published views are now implemented locally; livestream still awaits its data module.
 - A local MongoDB replica set runs on `127.0.0.1:27018` for development. The original nine collections/index groups were provisioned locally and in Atlas `makemymarriage_dev` on 2026-10-25; `shopping_items` was provisioned locally and in Atlas on 2026-10-27. The user confirmed setup output included `Ready: shopping_items` and `Database setup completed`; the user reported the deployed Shopping feature and persistent sidebar working on 2026-10-27. Local users and weddings have not been migrated. The Vercel Production deployment at `make-my-marriage-lyart.vercel.app` reached Atlas on 2026-10-21: a dummy login returned the expected 401 and a disposable registration returned 201. The test account and its session were removed. Atlas then contained one user and one wedding.
+
+## Catering
+
+- Implemented the approved simplified Stitch empty state, four-card meal overview, and menu editor. Both wedding members can save one private plan with food type, breakfast, lunch, dinner, snacks, and notes. Optional caterer contacts are collapsed inside the editor. Catering is enabled in the persistent sidebar and uses a responsive grid.
+- The local `catering` collection and active-wedding unique index are provisioned. Production build and 18 unit tests passed. The disposable local integration check passed persistence, edits, validation, signed-out access rejection, missing-wedding protection, page rendering, soft deletion, recreation, and cleanup. Browser visual review and live verification remain pending.
+- On 2026-10-31, provisioned and verified the `catering` collection and active-wedding partial unique index in Atlas `makemymarriage_dev`. The user reviewed the local design and approved committing and pushing this release. Next: verify saved menus on the live deployment.
 
 ## Gallery
 

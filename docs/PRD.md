@@ -94,6 +94,8 @@ New and existing weddings receive a small set of editable suggested items when t
 
 Basic catering information only: caterer name, contact information, food type, menu, breakfast, lunch, dinner, snacks, and special notes. No vendor marketplace, quotation, booking, or payment system in V1. 
 
+The approved Catering design uses an empty state and four compact meal cards. Both wedding members manage one private plan. Menus are entered one dish per line; cards show four dishes with an expandable remainder. Caterer contact details are optional and appear only in a collapsed section of the editor. Save changes persists immediately; there is no guest-facing publish flow.
+
 ## **11. Photo Gallery** 
 
 The couple can create albums such as Engagement, Nalangu, Muhurtham, Reception, Family, and Friends. Attending invited guests can upload photos after obtaining wedding detail access. The bride/groom can manage or remove uploaded photos.

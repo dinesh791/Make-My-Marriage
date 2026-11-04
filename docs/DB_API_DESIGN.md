@@ -315,7 +315,8 @@ The Shopping service seeds suggested items on first checklist access, including 
 |catererName|String|null|No|Name|
 |phone|String|null|No|Contact|
 |foodType|String|null|No|Vegetarian etc.|
-|menu|Array|No|Simple menu sections/items|
+|breakfast / lunch / dinner / snacks|String|No|Bounded multiline dish lists, up to 2,000 characters each|
+|contactPerson / email|String|No|Optional private caterer contact fields|
 |notes|String|null|No|Special notes|
 |deletedAt|Date|null|No|Soft delete|
 

@@ -10,6 +10,7 @@ import { GuestInvitationModel } from "../src/models/guest-invitation.ts";
 import { EventModel } from "../src/models/event.ts";
 import { InvitationModel } from "../src/models/invitation.ts";
 import { ShoppingItemModel } from "../src/models/shopping-item.ts";
+import { CateringModel } from "../src/models/catering.ts";
 import { GalleryAlbumModel } from "../src/models/gallery-album.ts";
 import { GalleryPhotoModel } from "../src/models/gallery-photo.ts";
 
@@ -47,6 +48,7 @@ try {
     EventModel,
     InvitationModel,
     ShoppingItemModel,
+    CateringModel,
     GalleryAlbumModel,
     GalleryPhotoModel,
   ]) {

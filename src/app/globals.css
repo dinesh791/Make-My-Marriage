@@ -3308,3 +3308,121 @@ p {
     display: none;
   }
 }
+
+.catering-workspace {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 32px;
+}
+.catering-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.catering-heading h1 {
+  font-family: Georgia, serif;
+  margin: 0;
+}
+.catering-heading p {
+  color: #756660;
+}
+.catering-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+.catering-card,
+.catering-empty,
+.catering-editor {
+  background: white;
+  border: 1px solid #eaded7;
+  border-radius: 10px;
+  padding: 28px;
+}
+.catering-card h2 {
+  margin-top: 0;
+  font-size: 20px;
+  color: #742b3b;
+}
+.catering-meal-title {
+  text-transform: capitalize;
+}
+.catering-card li {
+  padding: 5px 0;
+  overflow-wrap: anywhere;
+}
+.catering-card li::marker {
+  color: #a17d31;
+}
+.catering-empty {
+  text-align: center;
+  padding: 64px 24px;
+}
+.catering-food-badge {
+  display: inline-block;
+  padding: 6px 14px;
+  background: #f6efdf;
+  border-radius: 20px;
+}
+.catering-editor {
+  display: grid;
+  gap: 24px;
+}
+.catering-editor label {
+  display: grid;
+  gap: 8px;
+}
+.catering-editor input,
+.catering-editor select,
+.catering-editor textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #d9c9c0;
+  border-radius: 6px;
+  font: inherit;
+  background: white;
+}
+.catering-editor textarea {
+  resize: vertical;
+}
+.catering-editor details .catering-grid {
+  margin-top: 20px;
+}
+.catering-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+.catering-workspace summary {
+  cursor: pointer;
+  color: #742b3b;
+}
+.catering-notes {
+  margin-top: 24px;
+  padding: 20px;
+  background: white;
+  border: 1px solid #eaded7;
+  border-radius: 8px;
+}
+.catering-notes p {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 700px) {
+  .catering-workspace {
+    padding: 20px 12px;
+  }
+  .catering-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .catering-heading {
+    flex-wrap: wrap;
+  }
+  .catering-card,
+  .catering-editor {
+    padding: 20px;
+  }
+}

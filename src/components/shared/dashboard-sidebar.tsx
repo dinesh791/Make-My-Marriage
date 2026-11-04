@@ -13,13 +13,11 @@ const pages = [
   { label: "Wedding events", icon: "events", href: "/dashboard/events" },
   { label: "Invitation", icon: "invitation", href: "/dashboard/invitation" },
   { label: "Shopping checklist", icon: "shopping", href: "/dashboard/shopping" },
+  { label: "Catering", icon: "catering", href: "/dashboard/catering" },
   { label: "Photo gallery", icon: "gallery", href: "/dashboard/gallery" },
 ] as const;
 
-const plannedPages = [
-  { label: "Catering", icon: "catering" },
-  { label: "Livestream", icon: "livestream" },
-] as const;
+const plannedPages = [{ label: "Livestream", icon: "livestream" }] as const;
 
 export function DashboardSidebar({ weddingSlug }: { weddingSlug: string | null }) {
   const pathname = usePathname();
