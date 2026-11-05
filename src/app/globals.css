@@ -3314,6 +3314,122 @@ p {
   margin: 0 auto;
   padding: 32px;
 }
+.catering-spinner {
+  display: inline-block;
+  width: 38px;
+  height: 38px;
+  border: 3px solid #eaded7;
+  border-top-color: #742b3b;
+  border-radius: 50%;
+  animation: catering-spin 0.8s linear infinite;
+}
+.catering-spinner.small {
+  width: 16px;
+  height: 16px;
+  border-width: 2px;
+  vertical-align: middle;
+  margin-right: 6px;
+}
+@keyframes catering-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .catering-spinner {
+    animation-duration: 2s;
+  }
+}
+.catering-icon-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.catering-meal-editor {
+  min-width: 0;
+  border: 1px solid #eaded7;
+  border-radius: 8px;
+  padding: 16px;
+}
+.catering-meal-editor legend {
+  padding: 0 6px;
+  font-weight: 700;
+  color: #742b3b;
+}
+.catering-add-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.catering-add-row select,
+.catering-add-row input {
+  min-width: 0;
+  flex: 1;
+}
+.catering-icon-button {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border: 1px solid #d9c9c0;
+  border-radius: 6px;
+  background: #fff;
+  color: #742b3b;
+  cursor: pointer;
+}
+.catering-icon-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.catering-dish-list {
+  list-style: none;
+  padding: 0;
+  margin: 12px 0 0;
+}
+.catering-dish-list li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-top: 1px solid #f0e7e2;
+  padding: 6px 0;
+}
+.catering-dish-list li > span,
+.catering-dish-list li > input {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.dashboard-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  width: 100%;
+  max-width: none;
+  min-height: calc(100dvh - 5rem);
+  text-align: center;
+  color: #742b3b;
+}
+.wedding-loader {
+  width: 96px;
+  height: 64px;
+  color: #a17d31;
+  animation: wedding-loader-pulse 1.2s ease-in-out infinite alternate;
+}
+@keyframes wedding-loader-pulse {
+  to {
+    opacity: 0.45;
+    transform: scale(0.94);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wedding-loader {
+    animation: none;
+  }
+}
 .catering-heading {
   display: flex;
   align-items: center;
@@ -3350,8 +3466,16 @@ p {
   text-transform: capitalize;
 }
 .catering-card li {
+  display: list-item;
+  list-style-type: disc;
   padding: 5px 0;
   overflow-wrap: anywhere;
+}
+.catering-card ul {
+  display: block;
+  list-style: disc;
+  padding-left: 1.4rem;
+  margin: 0.5rem 0;
 }
 .catering-card li::marker {
   color: #a17d31;

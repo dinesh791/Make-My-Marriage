@@ -1,8 +1,29 @@
 # Make My Marriage — Project Status
 
-Last reviewed: 2026-10-31
+Last reviewed: 2026-11-04
 
 This is the living progress tracker for the project. `AGENTS.md` contains persistent project and implementation guidance. The confirmed V1 requirements and design are in `PRD.md`, `SYSTEM_DESIGN.md`, and `DB_API_DESIGN.md` in this folder.
+
+## Feature status by number
+
+| ID | Feature | Status | Next check or work |
+| --- | --- | --- | --- |
+| F1 | Email/password accounts | Live | Google sign-in, recovery, verification, and profile APIs remain. |
+| F2 | Wedding details and partner invitations | Implemented | Verify Atlas and live member flows; add archive. |
+| F3A | Guest email invitations and RSVP | Local flow verified | Set up a verified sender domain for relatives. |
+| F3B | Guest access to wedding details | Local flow verified | Check non-attending access in browser. |
+| F4 | Wedding events | Implemented | Verify add/edit/delete and guest visibility live. |
+| F5 | Traditional Tamil invitation editor | Implemented | Verify draft/publish live; later templates remain. |
+| F6 | Shopping checklist | Live, user verified | No immediate feature work. |
+| F7A | Couple gallery uploads | Live, user verified | Continue live regression checks. |
+| F7B | Guest gallery uploads | Local flow verified | Verify guest upload and couple publish live. |
+| F8A | Basic Catering workspace | Deployed, live use unverified | Commit `f50d454` is Ready in Vercel Production; save and reopen a menu live. Atlas collection/index and local tests passed. |
+| F8B | Catering controls and dish selection | In progress | Meal-specific suggestions, custom dishes, per-dish edit/delete icons, and list-style cards are implemented locally. Validate and review the flow before completion. |
+| F9 | Navigation and action loaders | In progress | Dashboard route fallback and Catering save now show a spinner. Verify navigation and remaining action states. |
+| F10 | External livestream | Pending | Add configuration and guest access. |
+| F11 | Tamil localization and launch readiness | Pending | Localization, browser coverage, monitoring, and production sender setup. |
+
+The numbered table is the current feature tracker. The sections below retain detailed verification history and may be condensed as features reach major milestones.
 
 ## Current Status
 
