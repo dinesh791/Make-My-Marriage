@@ -15,9 +15,8 @@ const pages = [
   { label: "Shopping checklist", icon: "shopping", href: "/dashboard/shopping" },
   { label: "Catering", icon: "catering", href: "/dashboard/catering" },
   { label: "Photo gallery", icon: "gallery", href: "/dashboard/gallery" },
+  { label: "Livestream", icon: "livestream", href: "/dashboard/livestream" },
 ] as const;
-
-const plannedPages = [{ label: "Livestream", icon: "livestream" }] as const;
 
 export function DashboardSidebar({ weddingSlug }: { weddingSlug: string | null }) {
   const pathname = usePathname();
@@ -91,13 +90,6 @@ export function DashboardSidebar({ weddingSlug }: { weddingSlug: string | null }
             Wedding website
           </span>
         )}
-        {plannedPages.map(({ label, icon }) => (
-          <span className="nav-disabled" key={label}>
-            <SidebarIcon name={icon} />
-            {label}
-            <span className="coming-soon">Soon</span>
-          </span>
-        ))}
         <SignOutButton />
       </nav>
     </aside>

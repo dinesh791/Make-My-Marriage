@@ -9,7 +9,7 @@ export const guestInvitationSchema = new Schema(
     sendStatus: { type: String, enum: ["PENDING", "SENT", "FAILED"], required: true },
     response: {
       type: String,
-      enum: ["PENDING", "ATTENDING", "DECLINED"],
+      enum: ["PENDING", "ATTENDING", "WATCHING_ONLINE", "DECLINED"],
       default: "PENDING",
       required: true,
     },

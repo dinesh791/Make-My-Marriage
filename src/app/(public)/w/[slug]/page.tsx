@@ -7,6 +7,7 @@ import { toPublicWeddingDto } from "@/modules/wedding/wedding.dto";
 import { getPublicWeddingBySlug } from "@/modules/wedding/wedding.service";
 import {
   canViewWeddingDetails,
+  canViewLivestream,
   getAttendingGuestInvitation,
 } from "@/modules/guest-invitation/guest-invitation.service";
 import { guestAccessCookieName } from "@/lib/auth/guest-access";
@@ -15,6 +16,7 @@ import { getCurrentUser } from "@/modules/auth/auth.service";
 import { listPublishedEvents } from "@/modules/event/event.service";
 import { getPublishedInvitation } from "@/modules/invitation/invitation.service";
 import { guestUploadAlbums, publishedGallery } from "@/modules/gallery/gallery.service";
+import { getEnabledLivestream } from "@/modules/livestream/livestream.service";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -45,21 +47,36 @@ export default async function PublicWeddingPage({ params }: Props) {
   );
   const unlocked =
     Boolean(guestInvitation) || (await canViewWeddingDetails(weddingId, undefined, user?.id));
-  const [events, invitation, gallery, uploadAlbums] = await Promise.all([
+  const livestreamAccess =
+    unlocked ||
+    (await canViewLivestream(
+      weddingId,
+      jar.get(guestAccessCookieName(weddingId))?.value,
+      user?.id,
+    ));
+  const publicWedding = toPublicWeddingDto(wedding);
+  // Never serialize gated story/address/map values to guests who have only livestream access.
+  const displayWedding = unlocked
+    ? publicWedding
+    : { ...publicWedding, story: null, venue: { ...publicWedding.venue, address: "", mapsUrl: null } };
+  const [events, invitation, gallery, uploadAlbums, livestream] = await Promise.all([
     unlocked ? listPublishedEvents(weddingId) : [],
     unlocked ? getPublishedInvitation(weddingId) : undefined,
     unlocked ? publishedGallery(weddingId) : { albums: [], photos: [] },
     guestInvitation ? guestUploadAlbums(weddingId) : [],
+    livestreamAccess ? getEnabledLivestream(weddingId) : null,
   ]);
   return (
     <LiveWeddingSite
-      wedding={toPublicWeddingDto(wedding)}
+      wedding={displayWedding}
       unlocked={unlocked}
       events={events}
       invitation={invitation}
       gallery={gallery}
       guestUploadAlbums={uploadAlbums}
       canGuestUpload={Boolean(guestInvitation)}
+      livestream={livestream}
+      livestreamAccess={livestreamAccess}
     />
   );
 }

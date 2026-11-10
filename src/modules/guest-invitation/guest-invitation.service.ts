@@ -160,12 +160,15 @@ export async function getGuestInvitation(token: string) {
   return { invitation, wedding };
 }
 
-export async function respondToGuestInvitation(token: string, response: "ATTENDING" | "DECLINED") {
+export async function respondToGuestInvitation(
+  token: string,
+  response: "ATTENDING" | "WATCHING_ONLINE" | "DECLINED",
+) {
   const { invitation, wedding } = await getGuestInvitation(token);
   if (invitation.response === "DECLINED") {
     throw new AppError("GUEST_RESPONSE_FINAL", "This invitation was already declined.", 409);
   }
-  if (invitation.response === "ATTENDING" && response !== "ATTENDING") {
+  if (invitation.response !== "PENDING" && invitation.response !== response) {
     throw new AppError("GUEST_RESPONSE_FINAL", "This invitation already has a response.", 409);
   }
   if (invitation.response === "PENDING") {
@@ -177,6 +180,7 @@ export async function respondToGuestInvitation(token: string, response: "ATTENDI
     slug: wedding.slug,
     weddingId: String(wedding._id),
     attending: response === "ATTENDING",
+    watchingOnline: response === "WATCHING_ONLINE",
     expiresAt: invitation.expiresAt,
   };
 }
@@ -190,6 +194,19 @@ export async function canViewWeddingDetails(
   if (userId && (await WeddingMemberModel.exists({ weddingId, userId, status: "ACTIVE" })))
     return true;
   return Boolean(await getAttendingGuestInvitation(weddingId, guestToken));
+}
+
+export async function canViewLivestream(weddingId: string, guestToken?: string, userId?: string) {
+  if (await canViewWeddingDetails(weddingId, guestToken, userId)) return true;
+  if (!guestToken || !TOKEN_PATTERN.test(guestToken)) return false;
+  const invitation = await repository.findByTokenHash(tokenHash(guestToken));
+  return Boolean(
+    invitation &&
+    String(invitation.weddingId) === weddingId &&
+    invitation.sendStatus === "SENT" &&
+    invitation.response === "WATCHING_ONLINE" &&
+    invitation.expiresAt > new Date(),
+  );
 }
 
 export async function getAttendingGuestInvitation(weddingId: string, guestToken?: string) {

@@ -374,16 +374,15 @@ The API can derive the browser-facing media URL from objectKey and storage confi
 
 ## **15. livestreams Collection** 
 
+Online RSVP amendment (2026-11-10): `guest_invitations.response` also accepts `WATCHING_ONLINE`. This response grants livestream-only access through the existing guest cookie; it does not count as attendance or unlock invitation, venue, gallery, or guest uploads. The dashboard labels it “Watching online”.
+
 |**Field**|**Type**|**Required**|**Notes**|
 |---|---|---|---|
 |_id|ObjectId|Yes|Primary key|
 |weddingId|ObjectId|Yes|Unique active record in V1|
-|provider|String|Yes|External provider name|
 |title|String|Yes|Display title|
-|playbackUrl|String|Yes|Public/player URL|
+|playbackUrl|String|Yes|External HTTPS viewing URL|
 |enabled|Boolean|Yes|Show/hide Live|
-|accessMode|String|Yes|SIMPLE_PASSWORD in V1|
-|accessPasswordHash|String|null|No|Never store plain password|
 |deletedAt|Date|null|No|Soft delete|
 
 
@@ -789,7 +788,7 @@ This keeps large files away from the main application request path.
 |GET|/api/v1/weddings/:weddingId/livestream|Member|Get livestream configuration|
 |PUT|/api/v1/weddings/:weddingId/livestream|Member|Create/update livestream|
 |DELETE|/api/v1/weddings/:weddingId/livestream|Member|Soft delete livestream|
-|POST|/api/v1/public/weddings/:slug/livestream/access|Public|Validate shared access<br>password|
+|GET|/api/v1/public/weddings/:slug/livestream|Attending guest or member|Get enabled viewing link|
 
 
 

@@ -1,6 +1,6 @@
 # Make My Marriage — Project Status
 
-Last reviewed: 2026-11-04
+Last reviewed: 2026-11-10
 
 This is the living progress tracker for the project. `AGENTS.md` contains persistent project and implementation guidance. The confirmed V1 requirements and design are in `PRD.md`, `SYSTEM_DESIGN.md`, and `DB_API_DESIGN.md` in this folder.
 
@@ -8,19 +8,20 @@ This is the living progress tracker for the project. `AGENTS.md` contains persis
 
 | ID | Feature | Status | Next check or work |
 | --- | --- | --- | --- |
+| F10A | Online RSVP | Implemented locally | “I’ll watch online” is stored separately from attendance and shown as “Watching online” to the couple. Local HTTP checks confirm livestream access with full invitation still locked. Type checking and targeted lint passed; live verification remains. |
 | F1 | Email/password accounts | Live | Google sign-in, recovery, verification, and profile APIs remain. |
 | F2 | Wedding details and partner invitations | Implemented | Verify Atlas and live member flows; add archive. |
 | F3A | Guest email invitations and RSVP | Local flow verified | Set up a verified sender domain for relatives. |
 | F3B | Guest access to wedding details | Local flow verified | Check non-attending access in browser. |
-| F4 | Wedding events | Implemented | Verify add/edit/delete and guest visibility live. |
-| F5 | Traditional Tamil invitation editor | Implemented | Verify draft/publish live; later templates remain. |
+| F4 | Wedding events | Live, user verified | User reports event flows working on the live site. Automated live regression coverage remains. |
+| F5 | Traditional Tamil invitation editor | Live, user verified | User reports invitation publishing working live. Additional templates remain later work. |
 | F6 | Shopping checklist | Live, user verified | No immediate feature work. |
 | F7A | Couple gallery uploads | Live, user verified | Continue live regression checks. |
-| F7B | Guest gallery uploads | Local flow verified | Verify guest upload and couple publish live. |
-| F8A | Basic Catering workspace | Deployed, live use unverified | Commit `f50d454` is Ready in Vercel Production; save and reopen a menu live. Atlas collection/index and local tests passed. |
-| F8B | Catering controls and dish selection | In progress | Meal-specific suggestions, custom dishes, per-dish edit/delete icons, and list-style cards are implemented locally. Validate and review the flow before completion. |
-| F9 | Navigation and action loaders | In progress | Dashboard route fallback and Catering save now show a spinner. Verify navigation and remaining action states. |
-| F10 | External livestream | Pending | Add configuration and guest access. |
+| F7B | Guest gallery uploads | Live, user verified | User reports guest photo uploads and couple photo review/publishing working live; automated live regression coverage remains. |
+| F8A | Basic Catering workspace | Live, user verified | User reports Catering working live. Atlas collection/index and local tests passed. |
+| F8B | Catering controls and dish selection | Live, user verified | Commit `3dc454f` added meal-specific suggestions, custom dishes, per-dish controls, and list-style cards; user reports the live feature working. |
+| F9 | Navigation and action loaders | Live, user verified for current flows | User reports the current loaders working live. Extend progress indicators only when new actions need them. |
+| F10 | External livestream | Implemented locally; Atlas ready | Members can save, hide, replace, or remove an external HTTPS link; attending guests and members can view it when enabled. Local and Atlas `livestreams` collections and active-wedding unique indexes are provisioned. Unit checks, production build, and disposable HTTP checks of saving, validation, access gating, page rendering, and removal passed. Live deployment verification remains. |
 | F11 | Tamil localization and launch readiness | Pending | Localization, browser coverage, monitoring, and production sender setup. |
 
 The numbered table is the current feature tracker. The sections below retain detailed verification history and may be condensed as features reach major milestones.
@@ -125,9 +126,9 @@ Follow the implementation order in `DB_API_DESIGN.md` and update this section as
 2. Finish the wedding domain: verify partner-invite create/accept against Atlas and wedding create/read/edit there, add wedding archive, and complete any remaining invitation defaults. Shopping suggestions now seed on first member access.
 3. Verify event add/edit/delete, draft privacy, and guest visibility in the browser; then verify the event and invitation editors on the live deployment after the changes are approved and pushed. Local member API creation, editing, and deletion passed.
 4. Add the remaining invitation templates and WhatsApp sharing in a later iteration. Guest email sending and RSVP access have a user-confirmed local happy-path check; they still need a verified production sender.
-5. Verify Shopping live member flows after deployment, and implement catering details.
-6. Verify attending-guest uploads and couple approval on the live deployment after approved push; gallery guest uploads pass local integration checks.
-7. Implement external livestream configuration and simple private access.
+5. Shopping and Catering are user-reported working live; add automated live regression coverage when practical.
+6. Attending-guest uploads and couple photo approval are user-reported working live; add automated live regression coverage when practical.
+7. Verify the implemented external livestream configuration and RSVP-gated link on the live deployment.
 8. Complete authorization, request validation, rate limiting, API consistency, integration/end-to-end tests, observability, and deployment configuration.
 
 ## Decisions and Follow-up Items
@@ -141,6 +142,6 @@ Follow the implementation order in `DB_API_DESIGN.md` and update this section as
 
 ## Next Recommended Step
 
-After approval, push and verify a real attending-guest upload and couple publish on the live site. Then design and implement the basic Catering workspace. A verified sending domain is still needed before emailing relatives beyond the Resend account's allowed recipients.
+Review F10 in the local dashboard, then commit and push with the user's approval and verify it on the live site. A verified sending domain is still needed before emailing relatives beyond the Resend account's allowed recipients.
 
 After each feature, verify its implementation in source, record the checks actually run, move completed work out of the pending list, and revise the next step.

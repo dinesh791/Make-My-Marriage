@@ -8,6 +8,6 @@ export const sendGuestInvitationsSchema = z
 
 export const guestResponseSchema = z
   .object({
-    response: z.enum(["ATTENDING", "DECLINED"]),
+    response: z.enum(["ATTENDING", "WATCHING_ONLINE", "DECLINED"]),
   })
   .strict();

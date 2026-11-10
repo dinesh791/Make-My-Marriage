@@ -3314,6 +3314,112 @@ p {
   margin: 0 auto;
   padding: 32px;
 }
+.livestream-workspace {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 32px;
+}
+.livestream-workspace h1 {
+  font-family: Georgia, serif;
+  color: #742b3b;
+}
+.livestream-workspace > p {
+  color: #756660;
+  line-height: 1.6;
+}
+.livestream-switch {
+  display: flex !important;
+  align-items: center;
+  gap: 12px;
+}
+.catering-editor .livestream-switch input {
+  width: auto;
+  flex: none;
+}
+.livestream-help {
+  color: #756660;
+  font-size: 0.9rem;
+}
+.livestream-public {
+  text-align: center;
+  max-width: 850px;
+}
+.livestream-card {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(2.5rem, 7vw, 5rem) 1.5rem;
+  border: 1px solid rgba(161, 125, 49, 0.28);
+  border-radius: 18px;
+  background: radial-gradient(ellipse at 50% 0%, #fff 0%, #fff9f5 46%, #f8ecea 100%);
+  box-shadow:
+    0 24px 70px rgba(67, 34, 34, 0.09),
+    inset 0 0 0 7px rgba(255, 255, 255, 0.55);
+}
+.livestream-card::before,
+.livestream-card::after {
+  position: absolute;
+  top: 50%;
+  width: 140px;
+  height: 140px;
+  border: 1px solid rgba(161, 125, 49, 0.15);
+  border-radius: 50%;
+  content: "";
+  transform: translateY(-50%);
+}
+.livestream-card::before {
+  left: -92px;
+}
+.livestream-card::after {
+  right: -92px;
+}
+.livestream-ornament {
+  margin-bottom: 0.8rem;
+  color: #a17d31;
+  font-size: 1.35rem;
+}
+.livestream-card h2 {
+  margin: 0.55rem 0 0.8rem;
+  color: #742b3b;
+  font-size: clamp(2rem, 5vw, 3.3rem);
+  line-height: 1.15;
+}
+.livestream-card > p {
+  margin: 0 auto;
+  color: #756660;
+  font-size: clamp(1rem, 2.4vw, 1.2rem);
+}
+.livestream-watch-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7rem;
+  min-height: 54px;
+  margin-top: 1.8rem;
+  padding: 0 1.6rem;
+  box-shadow: 0 8px 22px rgba(116, 43, 59, 0.22);
+}
+.livestream-play-icon {
+  font-size: 0.8rem;
+}
+.livestream-card-note {
+  display: block;
+  margin-top: 1.3rem;
+  color: #8a756a;
+  font-family: Georgia, serif;
+  font-size: 0.9rem;
+  font-style: italic;
+}
+@media (max-width: 600px) {
+  .livestream-card {
+    padding: 2.5rem 1.1rem;
+    border-radius: 12px;
+  }
+  .livestream-card::before,
+  .livestream-card::after {
+    width: 90px;
+    height: 90px;
+  }
+}
 .catering-spinner {
   display: inline-block;
   width: 38px;

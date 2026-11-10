@@ -44,8 +44,8 @@ export default async function GuestInvitationPage({
               {invitation.wedding.venueName}
             </p>
             <p>
-              Can you attend? Confirm to open the full wedding invitation and venue details. You do
-              not need to create an account.
+              Join in person to open the full invitation and venue details, or choose “I’ll watch
+              online” for livestream access. You do not need to create an account.
             </p>
             <GuestRsvpForm token={token} response={invitation.invitation.response} />
             <p className="field-hint">

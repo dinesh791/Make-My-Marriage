@@ -6,7 +6,7 @@ type GuestInvitation = {
   id: string;
   recipientEmail: string;
   sendStatus: "PENDING" | "SENT" | "FAILED";
-  response: "PENDING" | "ATTENDING" | "DECLINED";
+  response: "PENDING" | "ATTENDING" | "WATCHING_ONLINE" | "DECLINED";
   sentAt: string | null;
   respondedAt: string | null;
 };
@@ -142,7 +142,9 @@ export function GuestInvitationPanel({
                       ? "Awaiting response"
                       : item.response === "ATTENDING"
                         ? "Attending"
-                        : "Can’t attend"
+                        : item.response === "WATCHING_ONLINE"
+                          ? "Watching online"
+                          : "Can’t attend"
                     : item.sendStatus === "FAILED"
                       ? "Delivery failed"
                       : "Sending"}

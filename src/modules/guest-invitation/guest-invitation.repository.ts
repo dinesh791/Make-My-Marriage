@@ -92,7 +92,7 @@ export function resetFailed(
   );
 }
 
-export function respond(tokenHash: string, response: "ATTENDING" | "DECLINED") {
+export function respond(tokenHash: string, response: "ATTENDING" | "WATCHING_ONLINE" | "DECLINED") {
   return GuestInvitationModel.findOneAndUpdate(
     { tokenHash, sendStatus: "SENT", response: "PENDING", expiresAt: { $gt: new Date() } },
     { $set: { response, respondedAt: new Date() } },

@@ -104,7 +104,7 @@ The gallery accepts JPEG, PNG, and WebP images up to 25 MB each. Five suggested 
 
 ## **12. Wedding Livestream** 
 
-V1 keeps livestreaming simple. The couple can configure a livestream link and enable a Live section on the wedding website. Access should be private and limited through simple access information. The product will not build its own complex video-streaming infrastructure in V1. 
+V1 keeps livestreaming simple. The couple can save an external HTTPS viewing link, title, and visibility setting. The Live section appears only for attending invited guests and bride/groom members when enabled. There is no second livestream password; the existing RSVP access rule applies. External providers may allow viewers to reshare their direct links. The product does not host video in V1.
 
 ## **13. Wedding Dashboard** 
 

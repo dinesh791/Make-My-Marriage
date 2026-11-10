@@ -64,7 +64,7 @@ export async function respondToInvitation(request: NextRequest, token: string) {
     const input = await readAuthJson(request, guestResponseSchema);
     const result = await respondToGuestInvitation(token, input.response);
     const response = successResponse({ attending: result.attending, slug: result.slug });
-    if (result.attending)
+    if (result.attending || result.watchingOnline)
       response.cookies.set(guestAccessCookieName(result.weddingId), token, {
         ...guestAccessCookieOptions,
         expires: result.expiresAt,

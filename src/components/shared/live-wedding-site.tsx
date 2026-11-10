@@ -15,6 +15,8 @@ export function LiveWeddingSite({
   gallery,
   guestUploadAlbums,
   canGuestUpload,
+  livestream,
+  livestreamAccess,
 }: {
   wedding: PublicWeddingDto;
   unlocked: boolean;
@@ -32,6 +34,8 @@ export function LiveWeddingSite({
   };
   guestUploadAlbums: { id: string; name: string }[];
   canGuestUpload: boolean;
+  livestream: { title: string; playbackUrl: string } | null;
+  livestreamAccess: boolean;
 }) {
   const homeHref = `/w/${wedding.slug}`;
   const coupleNames =
@@ -53,6 +57,7 @@ export function LiveWeddingSite({
             {unlocked && wedding.story && <a href="#our-story">Our Story</a>}
             {events.length > 0 && <a href="#wedding-events">Events</a>}
             {(gallery.photos.length > 0 || canGuestUpload) && <a href="#gallery">Gallery</a>}
+            {livestream && <a href="#livestream">Watch live</a>}
             <a href="#digital-invitation">Invitation</a>
             {unlocked && <a href="#venue">Venue</a>}
           </nav>
@@ -184,6 +189,42 @@ export function LiveWeddingSite({
         </section>
       )}
 
+      {livestreamAccess && !livestream && (
+        <section className="wedding-section" id="livestream">
+          <div className="wedding-content livestream-public">
+            <h2 className="wedding-serif">Watch online</h2>
+            <p>The couple will share the livestream link here when it is ready.</p>
+          </div>
+        </section>
+      )}
+      {livestream && (
+        <section className="wedding-section" id="livestream">
+          <div className="wedding-content livestream-public">
+            <div className="livestream-card">
+              <div className="livestream-ornament" aria-hidden="true">
+                ✦
+              </div>
+              <span className="wedding-eyebrow">Join us live</span>
+              <h2 className="wedding-serif">{livestream.title}</h2>
+              <p>Celebrate this special moment with us, wherever you are.</p>
+              <a
+                className="button-primary livestream-watch-button"
+                href={livestream.playbackUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <span className="livestream-play-icon" aria-hidden="true">
+                  ▶
+                </span>
+                Watch live
+                <span aria-hidden="true">↗</span>
+              </a>
+              <span className="livestream-card-note">With love, from our families</span>
+            </div>
+          </div>
+        </section>
+      )}
+
       {unlocked && (
         <WeddingGallery
           albums={gallery.albums}
@@ -268,6 +309,7 @@ export function LiveWeddingSite({
             <a href="#home">Home</a>
             {unlocked && wedding.story && <a href="#our-story">Our story</a>}
             {events.length > 0 && <a href="#wedding-events">Events</a>}
+            {livestream && <a href="#livestream">Watch live</a>}
             <a href="#digital-invitation">Invitation</a>
             {unlocked && <a href="#venue">Venue</a>}
           </div>
