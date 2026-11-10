@@ -6,10 +6,12 @@ export function TraditionalTamilInvitation({
   wedding,
   invitation,
   events,
+  draftPreview = false,
 }: {
   wedding: PublicWeddingDto;
   invitation: InvitationContent;
   events: EventDto[];
+  draftPreview?: boolean;
 }) {
   const format = (date: string, time = false) =>
     new Intl.DateTimeFormat("en-IN", {
@@ -18,7 +20,15 @@ export function TraditionalTamilInvitation({
       timeZone: wedding.timezone,
     }).format(new Date(date));
   return (
-    <article className="invitation-card tamil-invitation">
+    <article
+      className={`invitation-card tamil-invitation${draftPreview ? " draft-preview-card" : ""}`}
+    >
+      {draftPreview && (
+        <div className="invitation-preview-label">
+          <strong>Draft preview</strong>
+          <span>Only you and your partner can see this draft.</span>
+        </div>
+      )}
       <span className="invitation-emblem" aria-hidden="true">
         ✦
       </span>

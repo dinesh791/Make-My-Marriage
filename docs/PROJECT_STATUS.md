@@ -9,7 +9,7 @@ This is the living progress tracker for the project. `AGENTS.md` contains persis
 | ID | Feature | Status | Next check or work |
 | --- | --- | --- | --- |
 | F10A | Online RSVP | Implemented locally | “I’ll watch online” is stored separately from attendance and shown as “Watching online” to the couple. Local HTTP checks confirm livestream access with full invitation still locked. Type checking and targeted lint passed; live verification remains. |
-| F1 | Email/password accounts | Live | Google sign-in, recovery, verification, and profile APIs remain. |
+| F1 | Account access and profile | Partially implemented | Email/password is live. First/last-name editing and immediate email changes protected by the current password are implemented locally; changed email remains unverified. Verify locally. Registration verification, Google sign-in, and password recovery remain. |
 | F2 | Wedding details and partner invitations | Implemented | Verify Atlas and live member flows; add archive. |
 | F3A | Guest email invitations and RSVP | Local flow verified | Set up a verified sender domain for relatives. |
 | F3B | Guest access to wedding details | Local flow verified | Check non-attending access in browser. |
@@ -122,7 +122,7 @@ The numbered table is the current feature tracker. The sections below retain det
 
 Follow the implementation order in `DB_API_DESIGN.md` and update this section as work is completed:
 
-1. Finish authentication: configure Google OAuth and Resend, implement safe Google account linking and password recovery, decide/implement email verification, add profile APIs, and complete deployment abuse controls/monitoring. Email/password accounts, sessions and dashboard protection are complete.
+1. Finish authentication: configure Google OAuth, implement safe Google account linking and password recovery, decide whether to verify email at registration, and complete deployment abuse controls/monitoring. Email/password accounts, sessions, dashboard protection, and basic account-profile editing are implemented.
 2. Finish the wedding domain: verify partner-invite create/accept against Atlas and wedding create/read/edit there, add wedding archive, and complete any remaining invitation defaults. Shopping suggestions now seed on first member access.
 3. Verify event add/edit/delete, draft privacy, and guest visibility in the browser; then verify the event and invitation editors on the live deployment after the changes are approved and pushed. Local member API creation, editing, and deletion passed.
 4. Add the remaining invitation templates and WhatsApp sharing in a later iteration. Guest email sending and RSVP access have a user-confirmed local happy-path check; they still need a verified production sender.

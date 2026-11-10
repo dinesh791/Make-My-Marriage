@@ -8,6 +8,7 @@ type SidebarIconName =
   | "website"
   | "catering"
   | "livestream"
+  | "account"
   | "signout";
 
 const paths: Record<SidebarIconName, React.ReactNode> = {
@@ -65,6 +66,12 @@ const paths: Record<SidebarIconName, React.ReactNode> = {
     <>
       <rect x="3" y="6" width="13" height="12" rx="2" />
       <path d="m16 10 5-3v10l-5-3M7 10l4 2-4 2z" />
+    </>
+  ),
+  account: (
+    <>
+      <circle cx="12" cy="8" r="4" />
+      <path d="M4 21a8 8 0 0 1 16 0" />
     </>
   ),
   signout: (

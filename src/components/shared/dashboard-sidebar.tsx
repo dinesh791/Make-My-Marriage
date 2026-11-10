@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { Brand } from "./brand";
-import { SignOutButton } from "./sign-out-button";
 import { SidebarIcon } from "./sidebar-icon";
 
 const pages = [
@@ -90,7 +89,6 @@ export function DashboardSidebar({ weddingSlug }: { weddingSlug: string | null }
             Wedding website
           </span>
         )}
-        <SignOutButton />
       </nav>
     </aside>
   );

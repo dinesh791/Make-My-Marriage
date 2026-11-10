@@ -4,7 +4,7 @@ Decision recorded: 2026-10-13. This document refines the V1 database/API baselin
 
 ## Implemented scope
 
-Email/password registration, login, logout, current-user lookup, and a protected dashboard are implemented. The existing pages use the REST API. Google sign-in, email verification, password recovery, and profile editing are still pending. Google configuration is validated separately so missing Google credentials do not prevent email/password login.
+Email/password registration, login, logout, current-user lookup, and a protected dashboard are implemented. A signed-in account can change its first name, last name, and sign-in email through `PATCH /api/v1/users/me`. Changing the email takes effect immediately and requires the current password. The new address remains unverified (`emailVerifiedAt` is cleared); the account owner should use an address they can access because recovery will depend on email in a future feature. Google sign-in, registration email verification, and password recovery remain pending. Google configuration is validated separately so missing Google credentials do not prevent email/password login.
 
 The dashboard displays saved wedding details for accounts with a wedding and a setup form for accounts without one. Bride/Groom is a wedding membership role selected during wedding creation, not an account privilege accepted during registration. Partner invitations and joining remain pending; the public website still uses sample data.
 
@@ -37,7 +37,9 @@ The 12 V1 domain collections remain the product baseline. This slice implements 
 | `auth_sessions` | userId, tokenHash, expiresAt, createdAt, updatedAt | Unique tokenHash; userId; TTL expiresAt |
 | `auth_rate_limits` | HMAC key as _id, attempts, expiresAt | Unique _id; TTL expiresAt |
 
-Operational sessions/counters are hard-deleted on revocation/expiry, rather than using business-record soft deletion. Password reset/verification tokens are not implemented and will require their own hashed, expiring, single-use storage.
+Operational sessions/counters are hard-deleted on revocation/expiry, rather than using business-record soft deletion. Registration verification and password-reset tokens are not implemented and will need their own hashed, expiring, single-use storage.
+
+Account email changes currently use the existing global unique email index and password hash; no new collection or index is required. Registration email verification and password reset remain separate future flows.
 
 `npm run db:setup` explicitly creates the three collections and adds their declared indexes. It preserves documents and existing indexes and is safe to rerun. It does not seed accounts. MongoDB automatic collection/index creation remains disabled. The repository checks the required indexes before authentication database operations; a deployment missing these indexes fails closed. Registration atomically creates the user and session using a MongoDB transaction, which requires a replica set locally as well as in Atlas.
 

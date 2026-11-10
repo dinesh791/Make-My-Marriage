@@ -556,7 +556,7 @@ Page 8
 |**Method**|**Endpoint**|**Auth**|**Purpose**|
 |---|---|---|---|
 |GET|/api/v1/users/me|User|Get profile|
-|PATCH|/api/v1/users/me|User|Update profile|
+|PATCH|/api/v1/users/me|User|Update profile; changing email requires the current password and takes effect immediately (the new address remains unverified)|
 |POST|/api/v1/users/me/photo|User|Create R2 upload flow for profile photo|
 
 

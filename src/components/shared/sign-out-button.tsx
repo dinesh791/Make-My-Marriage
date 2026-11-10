@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { SidebarIcon } from "./sidebar-icon";
 
-export function SignOutButton() {
+export function SignOutButton({ variant = "sidebar" }: { variant?: "sidebar" | "menu" }) {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
   async function signOut() {
@@ -22,9 +22,17 @@ export function SignOutButton() {
       setPending(false);
     }
   }
+  const isMenu = variant === "menu";
   return (
-    <div className="sidebar-signout">
-      <button className="sidebar-signout-button" type="button" onClick={signOut} disabled={pending}>
+    <div className={isMenu ? "sidebar-signout account-menu-signout" : "sidebar-signout"}>
+      <button
+        className={
+          isMenu ? "account-menu-action account-menu-signout-button" : "sidebar-signout-button"
+        }
+        type="button"
+        onClick={signOut}
+        disabled={pending}
+      >
         <SidebarIcon name="signout" />
         {pending ? "Signing out…" : "Sign out"}
       </button>

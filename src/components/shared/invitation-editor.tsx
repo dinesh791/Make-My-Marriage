@@ -141,14 +141,11 @@ export function InvitationEditor({
         </Link>
       </section>
       <section className="invitation-editor-preview" aria-label="Draft invitation preview">
-        <div className="invitation-preview-label">
-          <strong>Draft preview</strong>
-          <span>Only you and your partner can see this draft.</span>
-        </div>
         <TraditionalTamilInvitation
           wedding={wedding}
           invitation={{ ...saved, message }}
           events={events}
+          draftPreview
         />
       </section>
     </div>

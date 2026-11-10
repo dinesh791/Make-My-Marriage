@@ -67,9 +67,6 @@ export default async function DashboardPage() {
           <span className="eyebrow">Your wedding workspace</span>
           <p>{today}</p>
         </div>
-        <div className="avatar" aria-label={user.firstName}>
-          {user.firstName.slice(0, 1).toUpperCase()}
-        </div>
       </header>
       <div className="dashboard-welcome">
         <div>
